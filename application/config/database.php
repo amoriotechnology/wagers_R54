@@ -3,14 +3,14 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 $active_group  = 'default';
 $query_builder = TRUE;
-$active_record = TRUE; 
+$active_record = TRUE;
 
 $db['default'] = array(
     'dsn'          => '',
     'hostname'     => 'localhost',
-    'username' => 'amoriotech_stockeai',
-    'password' => 'Amorio@2022',
-    'database' => 'amoriotech_stockeai',
+    'username'     => 'root',
+    'password'     => '',
+    'database'     => 'stockeai',
     'dbdriver'     => 'mysqli',
     'dbprefix'     => '',
     'pconnect'     => FALSE,
@@ -22,7 +22,7 @@ $db['default'] = array(
     'swap_pre'     => '',
     'encrypt'      => FALSE,
     'compress'     => FALSE,
-    'autoinit'     => TRUE, 
+    'autoinit'     => TRUE,
     'stricton'     => FALSE,
     'failover'     => array(),
     'save_queries' => TRUE,
