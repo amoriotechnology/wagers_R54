@@ -1410,6 +1410,31 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         $content                     = $this->parser->parse("hr/employee_updateform", $data, true);
         $this->template->full_admin_html_view($content);
     }
+    
+    // Edit Sales Partner
+    public function salespartner_update_form() 
+    {
+        $employee_id                 = isset($_GET['salespartner']) ? $_GET['salespartner'] : null;
+        $encodedId                   = isset($_GET['id']) ? $_GET['id'] : null;
+        $decodedId                   = decodeBase64UrlParameter($encodedId);
+        $setting_detail              = $this->Web_settings->retrieve_setting_editdata($decodedId);
+        $currency_details            = $this->Web_settings->retrieve_setting_editdata($decodedId);
+        $curn_info_default           = $this->Hrm_model->curn_info_default($currency_details[0]["currency"], $decodedId);
+        $data["setting_detail"]      = $setting_detail;
+        $data["curn_info_default"]   = $curn_info_default[0]["currency_name"];
+        $data["currency"]            = $currency_details[0]["currency"];
+        $data["get_info_city_tax"]   = $this->Hrm_model->get_info_city_tax($decodedId);
+        $data["get_info_county_tax"] = $this->Hrm_model->get_info_county_tax($decodedId);
+        $data["encodedId"]           = $decodedId;
+        $data["title"]               = display("employee_update");
+        $data["employee_data"]       = $this->Hrm_model->employee_editdata($employee_id);
+        $data["attachmentData"]      = $this->Hrm_model->editAttachment($employee_id, $decodedId);
+        $data["state_tx"]            = $this->Hrm_model->state_tax($decodedId);
+        $data["cty_tax"]             = $this->Hrm_model->state_tax($decodedId);
+        $data["country_data"]        = $this->Hrm_model->getDatas('country', '*', ['id !=' => '']);
+        $content                     = $this->parser->parse("hr/edit_salespartner", $data, true);
+        $this->template->full_admin_html_view($content);
+    }
 
     // Update Employee
     public function update_employee() 
@@ -1449,9 +1474,11 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
             }
             $old_images = isset($_POST['old_image']) ? $_POST['old_image'] : [];
             $all_images = array_merge($old_images, $images);
-            $insertImages = implode(", ", $all_images);
+            $insertImages = !empty($all_images) ? implode(", ", $all_images) : '';
+            $files = !empty($insertImages) ? $insertImages : '';
         } else {
-            $old_images = isset($_POST['old_image']) ? $_POST['old_image'] : [];
+            $old_images = isset($_POST['old_image']) ? $_POST['old_image'] : '';
+            $files = !empty($old_images) ? $old_images : '';
         }
         if ($_FILES["profile_image"]["name"]) {
             $config["upload_path"]   = "assets/uploads/profile";
@@ -1502,7 +1529,7 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
             "last_name"              => $this->input->post("last_name", true),
             "designation"            => $this->input->post("designation", true),
             "phone"                  => $this->input->post("phone", true),
-            "files"                  => !empty($insertImages) ? $insertImages: $this->input->post("old_image", true),
+            "files"                  => $files,
             "rate_type"              => $this->input->post("paytype", true),
             "sc"                     => $this->input->post("sc", true),
             "email"                  => $this->input->post("email", true),
@@ -1536,6 +1563,8 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         ];
         $result = $this->Hrm_model->update_employee($this->input->post("employee_id", true), $postData);
 
+        // echo $this->db->last_query(); die;
+
         if ($result) {
             $response = array(
                 'status' => 1,
@@ -1551,7 +1580,147 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         }
     }
     echo json_encode($response);
-}
+    }
+
+    // Update Sales Partner
+    public function update_salesPartner()
+    {
+        $this->form_validation->set_rules('state_tax', 'Working State Tax', 'required');
+        $this->form_validation->set_rules('living_state_tax', 'Living State Tax', 'required');
+        $this->form_validation->set_rules('city_tax', 'Working City Tax', 'required');
+        $this->form_validation->set_rules('living_city_tax', 'Living City Tax', 'required');
+        $this->form_validation->set_rules('county_tax', 'Working County Tax', 'required');
+        $this->form_validation->set_rules('living_county_tax', 'Living County Tax', 'required');
+        $this->form_validation->set_rules('other_working_tax', 'Working Other Tax', 'required');
+        $this->form_validation->set_rules('other_living_tax', 'Living Other Tax', 'required');
+
+        $response = array();
+        if ($this->form_validation->run() == FALSE) {
+            $response = array(
+                'status' => 0,
+                'status_code' => 400,
+                'msg' => validation_errors() 
+            );
+            echo json_encode($response);
+            return;
+        }else{
+           $insertImages = '';
+            if (isset($_FILES["salespartnerfiles"]) && is_array($_FILES["salespartnerfiles"]["name"])) {
+                $no_files = count($_FILES["salespartnerfiles"]["name"]);
+                $images   = [];
+                for ($i = 0; $i < $no_files; $i++) {
+                    if ($_FILES["salespartnerfiles"]["error"][$i] > 0) {
+                    } else {
+                        move_uploaded_file(
+                            $_FILES["salespartnerfiles"]["tmp_name"][$i],
+                            "assets/uploads/salespartner/" . $_FILES["salespartnerfiles"]["name"][$i]
+                        );
+                        $images[] = $_FILES["salespartnerfiles"]["name"][$i];
+                    }
+                }
+                $old_images = isset($_POST['old_salespartnerimage']) ? $_POST['old_salespartnerimage'] : [];
+                $all_images = array_merge($old_images, $images);
+                $insertImages = !empty($all_images) ? implode(", ", $all_images) : '';
+                $files = !empty($insertImages) ? $insertImages : '';
+            }else{
+                $old_images = isset($_POST['old_salespartnerimage']) ? $_POST['old_salespartnerimage'] : '';
+                $files = !empty($old_images) ? $old_images : '';
+            }
+            if ($_FILES["profile_image"]["name"]) {
+                $config["upload_path"]   = "assets/uploads/profile/salespartner";
+                $config["allowed_types"] = "gif|jpg|png|jpeg|JPEG|GIF|JPG|PNG";
+                $config["encrypt_name"]  = true;
+                $config["max_size"]      = 2048;
+                $this->load->library("upload", $config);
+                if (!$this->upload->do_upload("profile_image")) {
+                    $error = ["error" => $this->upload->display_errors()];
+                    redirect(base_url("Chrm"));
+                } else {
+                    $data                     = $this->upload->data();
+                    $profile_image            = $data["file_name"];
+                    $config["image_library"]  = "gd2";
+                    $config["source_image"]   = $data["full_path"];
+                    $config["create_thumb"]   = false;
+                    $config["maintain_ratio"] = true;
+                    $config["width"]          = 200;
+                    $config["height"]         = 200;
+                    $this->load->library("image_lib", $config);
+                    $this->image_lib->resize();
+                }
+            } else {
+                $profile_image = isset($_POST['old_profileimage']) ? $_POST['old_profileimage'] : '';
+            }
+            $state_tax         = $this->input->post("state_tax");
+            $living_state_tax  = $this->input->post("living_state_tax");
+            $city_tax          = $this->input->post("city_tax");
+            $living_city_tax   = $this->input->post("living_city_tax");
+            $county_tax        = $this->input->post("county_tax");
+            $living_county_tax = $this->input->post("living_county_tax");
+            $other_working_tax = $this->input->post("other_working_tax");
+            $other_living_tax  = $this->input->post("other_living_tax");
+            $data_salespartner     = [
+                "working_state_tax"  => $state_tax,
+                "living_state_tax"   => ($state_tax != $living_state_tax) ? $living_state_tax : $state_tax,
+                "working_city_tax"   => $city_tax,
+                "living_city_tax"    => ($city_tax != $living_city_tax) ? $living_city_tax : $city_tax,
+                "working_county_tax" => $county_tax,
+                "living_county_tax"  => ($county_tax != $living_county_tax) ? $living_county_tax : $county_tax,
+                "working_other_tax"  => $other_working_tax,
+                "living_other_tax"   => ($other_working_tax != $other_living_tax) ? $other_living_tax : $other_working_tax,
+            ];
+
+            $data_salespartner['last_name']                   = $this->input->post('last_name');
+            $data_salespartner['designation']                 = $this->input->post('designation');
+            $data_salespartner['first_name']                  = $this->input->post('first_name');
+            $data_salespartner["middle_name"]                 = $this->input->post("middle_name");
+            $data_salespartner['phone']                       = $this->input->post('phone');
+            $data_salespartner['files']                       = $files;
+            $data_salespartner['employee_tax']                = $this->input->post('emp_tax_detail');
+            $data_salespartner['employee_type']               = $this->input->post('employee_type');
+            $data_salespartner['rate_type']                   = $this->input->post('paytype');
+            $data_salespartner['salesbusiness_name']          = $this->input->post('salesbusiness_name');
+            $data_salespartner['federalidentificationnumber'] = $this->input->post('federalidentificationnumber');
+            $data_salespartner['federaltaxclassification']    = $this->input->post('federaltaxclassification');
+            $data_salespartner['email']                       = $this->input->post('email');
+            $data_salespartner['sc']                          = $this->input->post('sc');
+            $data_salespartner['address_line_1']              = $this->input->post('address_line_1');
+            $data_salespartner['address_line_2']              = $this->input->post('address_line_2');
+            $data_salespartner['social_security_number']      = $this->input->post('ssn');
+            $data_salespartner['routing_number']              = $this->input->post('routing_number');
+            $data_salespartner['sales_partner']               = 'Sales_Partner';
+            $data_salespartner['choice']                      = $this->input->post('choice');
+            $data_salespartner['account_number']              = $this->input->post('account_number');
+            $data_salespartner['bank_name']                   = $this->input->post('bank_name');
+            $data_salespartner['country']                     = $this->input->post('country');
+            $data_salespartner['city']                        = $this->input->post('city');
+            $data_salespartner['zip']                         = $this->input->post('zip');
+            $data_salespartner['state']                       = $this->input->post('state');
+            $data_salespartner['emergencycontact']            = $this->input->post('emergencycontact');
+            $data_salespartner['emergencycontactnum']         = $this->input->post('emergencycontactnum');
+            $data_salespartner['withholding_tax']             = $this->input->post('withholding_tax');
+            $data_salespartner['last_name']                   = $this->input->post('last_name');
+            $data_salespartner['profile_image']               = $profile_image;
+            $data_salespartner['create_by']                   = $this->session->userdata('user_id');
+            $data_salespartner['e_type']                      = 2;
+            $data_salespartner['sp_withholding']              = $this->input->post('choice');
+
+            $result = $this->Hrm_model->update_salespartner($this->input->post("employee_id", true), $data_salespartner);
+            if ($result) {
+            $response = array(
+                'status' => 1,
+                'status_code' => 200,
+                'msg' => 'Sales Partner has been updated successfully'
+            );
+            } else {
+                $response = array(
+                    'status' => 0,
+                    'status_code' => 400,
+                    'msg' => 'Failed to sales partner. Please try again.'
+                );
+            }
+        }
+        echo json_encode($response);
+    }
 
     public function update_expense($id) {
         $this->load->library('lsettings');
@@ -1670,7 +1839,8 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         $this->template->full_admin_html_view($content);
     }
 
-    public function timesheed_inserted_data() {
+    public function timesheed_inserted_data() 
+    {
         $this->auth->check_admin_auth();
         $type         = $this->input->get('type');
         $emp_data     = [];
@@ -1678,13 +1848,15 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         $company_info = $this->Web_settings->retrieve_companysetting_editdata();
         if ($type == 'emp_data') {
             $id       = $this->input->get('employee');
-            $emp_data = $this->Hrm_model->getDatas('employee_history', '*', ['id' => $id]);
+        } else if($type == 'sp_data'){
+            $id       = $this->input->get('salespartner');
         } else {
             $id                = $this->input->get('timesheet_id');
             $timesheet_data    = $this->Hrm_model->timesheet_data($id);
             $timesheet_details = $this->Hrm_model->getDatas('timesheet_info_details', '*', ['timesheet_id' => $id]);
             $admin_name        = $this->Hrm_model->getDatas('administrator', '*', ['adm_id' => $timesheet_data[0]['admin_name']]);
         }
+        $emp_data = $this->Hrm_model->getDatas('employee_history', '*', ['id' => $id]);
         $fname = 'Employee';
         $data  = array(
             'company_name' => $company_info[0]['company_name'],
@@ -1714,17 +1886,18 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
                 'timesheet_data' => $timesheet_details,
                 'total_hours'    => $timesheet_data[0]['total_hours'],
                 'admin_name'     => $admin_name[0]['adm_name'],
-                'company_name' => $company_info[0]['company_name'],
-                'com_phone'    => $company_info[0]['mobile'],
-                'com_email'    => $company_info[0]['email'],
-                'website'      => $company_info[0]['website'],
-                'address'      => $company_info[0]['address'],
-                'currency'     => $company_info[0]['currency'],
-                'logo'         => (!empty($setting[0]['invoice_logo']) ? $setting[0]['invoice_logo'] : $company_info[0]['logo']),
-                'color'        => $setting[0]['button_color'],
-                'type'         => $type,
+                'company_name'   => $company_info[0]['company_name'],
+                'com_phone'      => $company_info[0]['mobile'],
+                'com_email'      => $company_info[0]['email'],
+                'website'        => $company_info[0]['website'],
+                'address'        => $company_info[0]['address'],
+                'currency'       => $company_info[0]['currency'],
+                'logo'           => (!empty($setting[0]['invoice_logo']) ? $setting[0]['invoice_logo'] : $company_info[0]['logo']),
+                'color'          => $setting[0]['button_color'],
+                'type'           => $type,
             );
         }
+
         $content = $this->load->view('hr/emp_timesheet_html', $data, true);
         $PDF     = new Dompdf();
         $PDF->loadHtml($content);
@@ -1840,7 +2013,8 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         echo json_encode($data);
     }
 // Payslip Function - Madhu
-    public function pay_slip() {
+   public function pay_slip() {
+        // echo '<pre>'; print_r($_POST); echo '</pre>'; die;
         list($user_id, $company_id)       = array_map('decodeBase64UrlParameter', [$this->input->post('admin_company_id'), $this->input->post('adminId')]);
         $company_info                     = $this->Hrm_model->retrieve_companyinformation($user_id);
         $datacontent                      = $this->Hrm_model->retrieve_companydata($user_id);
@@ -1873,8 +2047,6 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         $data_timesheet['payment_ref_no'] = (!empty($this->input->post('payment_refno', TRUE)) ? $this->input->post('payment_refno', TRUE) : '');
         $work_hour                        = (!empty($this->input->post('hour_weekly_total')) ? $this->input->post('hour_weekly_total') : []);
         $data_timesheet['weekly_hours']   = json_encode($work_hour);
-        $salescommision              = $this->Hrm_model->sc_info_count($employee_id, $payperiod);
-        $data_timesheet['sc_amount'] = $salescommision['s_commision_amount'];
         if (!empty($this->input->post('administrator_person', TRUE))) {
             $data_timesheet['uneditable'] = 1;
         } else {
@@ -1925,7 +2097,7 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
             $hours_per_day = isset($this->input->post('sum')[$i]) ? $this->input->post('sum')[$i] : null;
             $daily_bk      = isset($this->input->post('dailybreak')[$i]) ? $this->input->post('dailybreak')[$i] : null;
             $data_info     = array(
-                'timesheet_id'  => $this->session->userdata("timesheet_id_new"),
+                'timesheet_id'  => $purchase_id_2,
                 'present'       => $present,
                 'Date'          => $date,
                 'Day'           => $day,
@@ -1949,7 +2121,9 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         $content                   = $this->parser->parse('hr/expense_list', $data, true);
         $this->template->full_admin_html_view($content);
     }
-    public function pay_slip_list() {
+
+    public function pay_slip_list() 
+    {
         $data['title'] = display('pay_slip_list');
         $this->load->model('Hrm_model');
         $CI = &get_instance();
@@ -1959,6 +2133,7 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         $content               = $this->parser->parse('hr/pay_slip_list', $data, true);
         $this->template->full_admin_html_view($content);
     }
+
     public function payslipIndexData() {
         $encodedId          = isset($_GET['id']) ? $_GET['id'] : null;
         $admin_id           = isset($_GET['admin_id']) ? $_GET['admin_id'] : null;
@@ -2260,20 +2435,33 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         $this->template->full_admin_html_view($content);
     }
     public function add_state() {
-        $CI         = &get_instance();
+
         $state_name = $this->input->post('state_name');
         $userId     = $this->input->post('admin_company_id');
         $decodedId  = decodeBase64UrlParameter($userId);
         $companyId  = $this->input->post('adminId');
+        $response = array();
         $data       = array(
             'state'      => $state_name,
             'Type'       => 'State',
             'created_by' => $decodedId,
         );
         logEntry($this->session->userdata('user_id'), $this->session->userdata('unique_id'), '', '', $this->session->userdata('userName'), 'Federal Taxes', 'Human Resource', 'New State Added Successfully', 'Add', date('m-d-Y'));
-        $this->db->insert('state_and_tax', $data);
-        $this->session->set_userdata(array('message' => 'New State Added Successfully'));
-        redirect(base_url('Chrm/payroll_setting?id=' . $userId . '&admin_id=' . $companyId));
+        $result = $this->db->insert('state_and_tax', $data);
+        if($result){
+           $response = array(
+              'status' => 1,
+              'message' => 'New State Added Successfully'
+           );
+        }else{
+            $response = array(
+              'status' => 0,
+              'message' => 'New State Added failed'
+           );
+        }
+
+        echo json_encode($response); 
+        exit;
     }
     public function add_state_tax() {
         $CI             = &get_instance();
@@ -2284,14 +2472,27 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         $user_id        = $this->input->post('admin_company_id');
         $decodedId      = decodeBase64UrlParameter($user_id);
         $companyId      = $this->input->post('adminId');
+        $response = array();
         $this->db->where('state', $selected_state);
         $this->db->set('tax', "CONCAT(tax,',','" . $tx . "')", FALSE);
         $this->db->update('state_and_tax');
         logEntry($this->session->userdata('user_id'), $this->session->userdata('unique_id'), '', '', $this->session->userdata('userName'), 'Federal Taxes', 'Human Resource', 'New Tax Has been assigned Successfully', 'Add', date('m-d-Y'));
         $sql1 = "UPDATE state_and_tax SET state_code = '$state_code', tax = TRIM(BOTH ',' FROM tax) WHERE state = '$selected_state' AND created_by = '$decodedId'";
-        $this->db->query($sql1);
-        $this->session->set_userdata(array('message' => 'New Tax Has been assigned Successfully'));
-        redirect(base_url('Chrm/payroll_setting?id=' . $user_id . '&admin_id=' . $companyId));
+        $result = $this->db->query($sql1);
+        if($result){
+           $response = array(
+              'status' => 1,
+              'message' => 'New Tax Has been assigned Successfully'
+           );
+        }else{
+            $response = array(
+              'status' => 0,
+              'message' => 'New Tax Has been assigned failed !!'
+           );
+        }
+
+        echo json_encode($response); 
+        exit;
     }
    public function add_designation_data() 
     {
@@ -2416,16 +2617,47 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         $user_id                = isset($_GET['id']) ? $_GET['id'] : null;
         $decodedId              = decodeBase64UrlParameter($user_id);
         parse_str($parts['query'], $query);
+
         // Hourly Data
         $data['taxinfo'] = $this->db->select("*")->from('state_localtax')->where('tax', $query['tax'])->where('created_by', $decodedId)->get()->result_array();
         // Weekly Data
-        $data['weekly_taxinfo'] = $this->db->select("*")->from('weekly_tax_info')->where('tax', $query['tax'])->where('created_by', $decodedId)->get()->result_array();
+        $data['weekly_taxinfo'] = $this->db->select("*")->from('weekly_tax_info')->where('tax',$query['tax'])->where('created_by', $decodedId)->get()->result_array();
         // BiWeekly Data
-        $data['biweekly_taxinfo'] = $this->db->select("*")->from('biweekly_tax_info')->where('tax', $query['tax'])->where('created_by', $decodedId)->get()->result_array();
+        $data['biweekly_taxinfo'] = $this->db->select("*")->from('biweekly_tax_info')->where('tax',$query['tax'])->where('created_by', $decodedId)->get()->result_array();
         // Monthly Data
         $data['monthly_taxinfo'] = $this->db->select("*")->from('monthly_tax_info')->where('tax', $query['tax'])->where('created_by', $decodedId)->get()->result_array();
         $data['title']           = display('add_taxes_detail');
         $content                 = $this->parser->parse('hr/add_state_tax_detail', $data, true);
+        $this->template->full_admin_html_view($content);
+    }
+
+    public function add_citydetails($tax = null) {
+        $setting_detail         = $this->Web_settings->retrieve_setting_editdata();
+        $data['setting_detail'] = $setting_detail;
+        $url                    = "https://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+        $parts                  = parse_url($url);
+        $user_id                = isset($_GET['id']) ? $_GET['id'] : null;
+        $decodedId              = decodeBase64UrlParameter($user_id);
+        parse_str($parts['query'], $query);
+        // city Data
+        $data['citydata'] = $this->db->select("*")->from('city_tax_info')->where('tax', $query['tax'])->where('created_by', $decodedId)->get()->result_array();
+
+        $content                 = $this->parser->parse('hr/add_city_details', $data, true);
+        $this->template->full_admin_html_view($content);
+    }
+
+     public function add_countydetails($tax = null) {
+        $setting_detail         = $this->Web_settings->retrieve_setting_editdata();
+        $data['setting_detail'] = $setting_detail;
+        $url                    = "https://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+        $parts                  = parse_url($url);
+        $user_id                = isset($_GET['id']) ? $_GET['id'] : null;
+        $decodedId              = decodeBase64UrlParameter($user_id);
+        parse_str($parts['query'], $query);
+        // county Data
+        $data['countydata'] = $this->db->select("*")->from('county_tax_info')->where('tax',$query['tax'])->where('created_by', $decodedId)->get()->result_array();
+
+        $content                 = $this->parser->parse('hr/add_countydetails', $data, true);
         $this->template->full_admin_html_view($content);
     }
     // Federal Tax - Madhu
@@ -2520,20 +2752,35 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         $data = $this->Hrm_model->insert_adsrs_data($data);
         echo json_encode($data);
     }
+
     public function add_city() {
         $city_name = $this->input->post('city_name');
         $userId    = $this->input->post('admin_company_id');
         $decodedId = decodeBase64UrlParameter($userId);
         $companyId = $this->input->post('adminId');
+        $respose = array();
         $data      = array(
             'state'      => $city_name,
             'Type'       => 'City',
             'created_by' => $decodedId,
         );
-        $this->db->insert('state_and_tax', $data);
-        $this->session->set_userdata(array('message' => 'New City Added Successfully'));
-        redirect(base_url('Chrm/payroll_setting?id=' . $userId . '&admin_id=' . $companyId));
+        $result = $this->db->insert('state_and_tax', $data);
+        if($result){
+            $response = array(
+                'status' => 1,
+                'message' => 'New City Added Successfully.'
+            );
+        } else {
+            $response = array(
+                'status' => 0,
+                'message' => 'Failed to save city. Please try again.'
+            );
+        }
+        
+        echo json_encode($response);
+        exit;
     }
+
     public function add_city_state_tax() {
         $CI            = &get_instance();
         $selected_city = $this->input->post('selected_city');
@@ -2541,14 +2788,27 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         $userId        = $this->input->post('admin_company_id');
         $decodedId     = decodeBase64UrlParameter($userId);
         $companyId     = $this->input->post('adminId');
+        $response = array();
         $this->db->where('state', $selected_city);
         $this->db->set('tax', "CONCAT(tax,',','" . $citytax . "')", FALSE);
         $this->db->update('state_and_tax');
         $query = $this->db->get();
         $sql1  = "UPDATE state_and_tax SET tax = TRIM(BOTH ',' FROM tax)";
         $query1 = $this->db->query($sql1);
-        $this->session->set_userdata(array('message' => 'New Tax Has been assigned Successfully'));
-        redirect(base_url('Chrm/payroll_setting?id=' . $userId . '&admin_id=' . $companyId));
+        if($query1){
+            $response = array(
+                'status' => 1,
+                'message' => 'New City Tax Has been assigned Successfully.'
+            );
+        } else {
+            $response = array(
+                'status' => 0,
+                'message' => 'Failed to save city tax. Please try again.'
+            );
+        }
+        
+        echo json_encode($response);
+        exit;
     }
     public function add_county_tax() {
         $CI              = &get_instance();
@@ -2557,14 +2817,28 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         $userId          = $this->input->post('admin_company_id');
         $decodedId       = decodeBase64UrlParameter($userId);
         $companyId       = $this->input->post('adminId');
+        $response        = array();
         $this->db->where('state', $selected_county);
         $this->db->set('tax', "CONCAT(tax,',','" . $ctax . "')", FALSE);
         $this->db->update('state_and_tax');
         $query = $this->db->get();
         $sql1  = "UPDATE state_and_tax SET tax = TRIM(BOTH ',' FROM tax)";
         $query1 = $this->db->query($sql1);
-        $this->session->set_userdata(array('message' => 'New Tax Has been assigned Successfully'));
-        redirect(base_url('Chrm/payroll_setting?id=' . $userId . '&admin_id=' . $companyId));
+
+        if($query1){
+            $response = array(
+                'status' => 1,
+                'message' => 'New County Tax Has been assigned Successfully.'
+            );
+        } else {
+            $response = array(
+                'status' => 0,
+                'message' => 'Failed to save county tax. Please try again.'
+            );
+        }
+        
+        echo json_encode($response);
+        exit;
     }
     public function add_county() {
         $CI        = &get_instance();
@@ -2572,14 +2846,28 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         $userId    = $this->input->post('admin_company_id');
         $decodedId = decodeBase64UrlParameter($userId);
         $companyId = $this->input->post('adminId');
+        $response = array();
         $data      = array(
             'state'      => $county,
             'created_by' => $decodedId,
             'Type'       => 'County',
         );
-        $this->db->insert('state_and_tax', $data);
-        $this->session->set_userdata(array('message' => 'New County Added Successfully'));
-        redirect(base_url('Chrm/payroll_setting?id=' . $userId . '&admin_id=' . $companyId));
+        $result = $this->db->insert('state_and_tax', $data);
+
+        if($result){
+            $response = array(
+                'status' => 1,
+                'message' => 'New County Added Successfully.'
+            );
+        } else {
+            $response = array(
+                'status' => 0,
+                'message' => 'Failed to save county. Please try again.'
+            );
+        }
+        
+        echo json_encode($response);
+        exit;
     }
     //Designation form
     public function add_designation() {
@@ -2665,18 +2953,43 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
     }
 
     public function salespartner_create() {
-        if (isset($_FILES['files']) && !empty($_FILES['files']['name'][0])) {
-            $no_files = count($_FILES["files"]['name']);
+        
+        $decodedId = decodeBase64UrlParameter($this->input->post('company_id'));
+        $admin_id  = decodeBase64UrlParameter($this->input->post('admin_id'));
+
+        $this->form_validation->set_rules('state_tax', 'Working State Tax', 'required');
+        $this->form_validation->set_rules('living_state_tax', 'Living State Tax', 'required');
+        $this->form_validation->set_rules('city_tax', 'Working City Tax', 'required');
+        $this->form_validation->set_rules('living_city_tax', 'Living City Tax', 'required');
+        $this->form_validation->set_rules('county_tax', 'Working County Tax', 'required');
+        $this->form_validation->set_rules('living_county_tax', 'Living County Tax', 'required');
+        $this->form_validation->set_rules('other_working_tax', 'Working Other Tax', 'required');
+        $this->form_validation->set_rules('other_living_tax', 'Living Other Tax', 'required');
+
+        $response = array();
+
+        if ($this->form_validation->run() == FALSE) {
+            $response = array(
+                'status' => 0,
+                'status_code' => 400,
+                'msg' => validation_errors() 
+            );
+            echo json_encode($response);
+            return;
+        }else{
+            if (isset($_FILES['salespartnerfiles']) && !empty($_FILES['salespartnerfiles']['name'][0])) {
+            $no_files = count($_FILES["salespartnerfiles"]['name']);
             for ($i = 0; $i < $no_files; $i++) {
-                if ($_FILES["files"]["error"][$i] > 0) {
-                    echo "Error: " . $_FILES["files"]["error"][$i] . "<br>";
+                if ($_FILES["salespartnerfiles"]["error"][$i] > 0) {
+                    echo "Error: " . $_FILES["salespartnerfiles"]["error"][$i] . "<br>";
                 } else {
                     move_uploaded_file(
-                        $_FILES["files"]["tmp_name"][$i],
-                        "assets/uploads/salespartner/" . $_FILES["files"]["name"][$i]
+                        $_FILES["salespartnerfiles"]["tmp_name"][$i],
+                        "assets/uploads/salespartner/" . $_FILES["salespartnerfiles"]["name"][$i]
                     );
-                    $images[]     = $_FILES["files"]["name"][$i];
-                    $insertImages = implode(', ', $images);
+                    $images[]     = $_FILES["salespartnerfiles"]["name"][$i];
+                    $insertImages = !empty($images) ? implode(", ", $images) : '';
+                    $files = !empty($insertImages) ? $insertImages : '';
                 }
             }
             if ($_FILES['profile_image']['name']) {
@@ -2702,122 +3015,138 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
                     $profile_image = $profile_image;
                 }
             }
-        } else {
-            if ($_FILES['profile_image']['name']) {
-                $config['upload_path']   = 'assets/uploads/profile';
-                $config['allowed_types'] = 'gif|jpg|png|jpeg|JPEG|GIF|JPG|PNG';
-                $config['encrypt_name']  = TRUE;
-                $this->load->library('upload', $config);
-                if (!$this->upload->do_upload('profile_image')) {
-                    $error = array('error' => $this->upload->display_errors());
-                    $this->session->set_userdata(array('error_message' => $this->upload->display_errors()));
-                    redirect(base_url('Cweb_setting'));
-                } else {
-                    $data                     = $this->upload->data();
-                    $profile_image            = $data['file_name'];
-                    $config['image_library']  = 'gd2';
-                    $config['source_image']   = $profile_image;
-                    $config['create_thumb']   = false;
-                    $config['maintain_ratio'] = TRUE;
-                    $config['width']          = 200;
-                    $config['height']         = 200;
-                    $this->load->library('image_lib', $config);
-                    $this->image_lib->resize();
-                    $profile_image = $profile_image;
+            } else {
+                if ($_FILES['profile_image']['name']) {
+                    $config['upload_path']   = 'assets/uploads/profile';
+                    $config['allowed_types'] = 'gif|jpg|png|jpeg|JPEG|GIF|JPG|PNG';
+                    $config['encrypt_name']  = TRUE;
+                    $this->load->library('upload', $config);
+                    if (!$this->upload->do_upload('profile_image')) {
+                        $error = array('error' => $this->upload->display_errors());
+                        $this->session->set_userdata(array('error_message' => $this->upload->display_errors()));
+                        redirect(base_url('Cweb_setting'));
+                    } else {
+                        $data                     = $this->upload->data();
+                        $profile_image            = $data['file_name'];
+                        $config['image_library']  = 'gd2';
+                        $config['source_image']   = $profile_image;
+                        $config['create_thumb']   = false;
+                        $config['maintain_ratio'] = TRUE;
+                        $config['width']          = 200;
+                        $config['height']         = 200;
+                        $this->load->library('image_lib', $config);
+                        $this->image_lib->resize();
+                        $profile_image = $profile_image;
+                    }
                 }
             }
+
+            $data_salespartner['last_name']                   = $this->input->post('last_name');
+            $data_salespartner['designation']                 = $this->input->post('designation');
+            $data_salespartner['first_name']                  = $this->input->post('first_name');
+            $data_salespartner["middle_name"]                 = $this->input->post("middle_name");
+            $data_salespartner['phone']                       = $this->input->post('phone');
+            $data_salespartner['files']                       = $files;
+            $data_salespartner['employee_tax']                = $this->input->post('emp_tax_detail');
+            $data_salespartner['employee_type']               = $this->input->post('employee_type');
+            $data_salespartner['rate_type']                   = $this->input->post('paytype');
+            $data_salespartner['salesbusiness_name']          = $this->input->post('salesbusiness_name');
+            $data_salespartner['federalidentificationnumber'] = $this->input->post('federalidentificationnumber');
+            $data_salespartner['federaltaxclassification']    = $this->input->post('federaltaxclassification');
+            $data_salespartner['email']                       = $this->input->post('email');
+            $data_salespartner['sc']                          = $this->input->post('sc');
+            $data_salespartner['address_line_1']              = $this->input->post('address_line_1');
+            $data_salespartner['address_line_2']              = $this->input->post('address_line_2');
+            $data_salespartner['social_security_number']      = $this->input->post('ssn');
+            $data_salespartner['routing_number']              = $this->input->post('routing_number');
+            $data_salespartner['sales_partner']               = 'Sales_Partner';
+            $data_salespartner['choice']                      = $this->input->post('choice');
+            $data_salespartner['account_number']              = $this->input->post('account_number');
+            $data_salespartner['bank_name']                   = $this->input->post('bank_name');
+            $data_salespartner['country']                     = $this->input->post('country');
+            $data_salespartner['city']                        = $this->input->post('city');
+            $data_salespartner['zip']                         = $this->input->post('zip');
+            $data_salespartner['state']                       = $this->input->post('state');
+            $data_salespartner['emergencycontact']            = $this->input->post('emergencycontact');
+            $data_salespartner['emergencycontactnum']         = $this->input->post('emergencycontactnum');
+            $data_salespartner['withholding_tax']             = $this->input->post('withholding_tax');
+            $data_salespartner['last_name']                   = $this->input->post('last_name');
+            $data_salespartner['profile_image']               = $profile_image;
+            $data_salespartner['create_by']                   = $this->session->userdata('user_id');
+            $data_salespartner['e_type']                      = 2;
+            $data_salespartner['sp_withholding']              = $this->input->post('choice');
+            // State Tax Information
+            $state_tax        = $this->input->post('state_tax');
+            $living_state_tax = $this->input->post('living_state_tax');
+            if ($state_tax == $living_state_tax) {
+                $data_salespartner['working_state_tax'] = $state_tax;
+            } else {
+                $data_salespartner['working_state_tax'] = $state_tax;
+                $data_salespartner['living_state_tax']  = $living_state_tax;
+            }
+            // Local (City) Tax Information
+            $city_tax        = $this->input->post('city_tax');
+            $living_city_tax = $this->input->post('living_city_tax');
+            if ($city_tax == $living_city_tax) {
+                $data_salespartner['working_city_tax'] = $city_tax;
+            } else {
+                $data_salespartner['working_city_tax'] = $city_tax;
+                $data_salespartner['living_city_tax']  = $living_city_tax;
+            }
+            //  City Tax Information
+            $county_tax        = $this->input->post('county_tax');
+            $living_county_tax = $this->input->post('living_county_tax');
+            if ($county_tax == $living_county_tax) {
+                $data_salespartner['working_county_tax'] = $county_tax;
+            } else {
+                $data_salespartner['working_county_tax'] = $county_tax;
+                $data_salespartner['living_county_tax']  = $living_county_tax;
+            }
+            // Other Tax Info
+            $other_working_tax = $this->input->post('other_working_tax');
+            $other_living_tax  = $this->input->post('other_living_tax');
+            if ($county_tax == $county_tax) {
+                $data_salespartner['working_other_tax'] = $other_working_tax;
+            } else {
+                $data_salespartner['working_other_tax'] = $other_working_tax;
+                $data_salespartner['living_other_tax']  = $other_living_tax;
+            }
+            $living_state_tax                   = $this->input->post('living_state_tax');
+            $data_salespartner['working_state_tax'] = $state_tax;
+            $data_salespartner['living_state_tax']  = $living_state_tax;
+            // Local (City) Tax Information
+            $city_tax                          = $this->input->post('city_tax');
+            $living_city_tax                   = $this->input->post('living_city_tax');
+            $data_salespartner['working_city_tax'] = $city_tax;
+            $data_salespartner['living_city_tax']  = $living_city_tax;
+            //  City Tax Information
+            $county_tax                          = $this->input->post('county_tax');
+            $living_county_tax                   = $this->input->post('living_county_tax');
+            $data_salespartner['working_county_tax'] = $county_tax;
+            $data_salespartner['living_county_tax']  = $living_county_tax;
+            // Other Tax Info
+            $other_working_tax                  = $this->input->post('other_working_tax');
+            $other_living_tax                   = $this->input->post('other_living_tax');
+            $data_salespartner['working_other_tax'] = $other_working_tax;
+            $data_salespartner['living_other_tax']  = $other_living_tax;
+
+            logEntry($this->session->userdata('user_id'), $this->session->userdata('unique_id'), '', '', $this->session->userdata('userName'), 'Add Sales Partner', 'Human Resource', 'Sales Partner has been Added successfully', 'Add', date('m-d-Y'));
+
+            if ($this->db->insert('employee_history', $data_salespartner)) {
+            $response = array(
+                'status' => 1,
+                'status_code' => 200,
+                'msg' => 'Sales Partner has been saved successfully.'
+            );
+            } else {
+                $response = array(
+                    'status' => 0,
+                    'status_code' => 400,
+                    'msg' => 'Failed to save sales partner. Please try again.'
+                );
+            }
         }
-        $data_empolyee['last_name']                   = $this->input->post('last_name');
-        $data_empolyee['designation']                 = $this->input->post('designation');
-        $data_empolyee['first_name']                  = $this->input->post('first_name');
-        $data_empolyee["middle_name"]                 = $this->input->post("middle_name");
-        $data_empolyee['phone']                       = $this->input->post('phone');
-        $data_empolyee['files']                       = $insertImages;
-        $data_empolyee['employee_tax']                = $this->input->post('emp_tax_detail');
-        $data_empolyee['employee_type']               = $this->input->post('employee_type');
-        $data_empolyee['salesbusiness_name']          = $this->input->post('salesbusiness_name');
-        $data_empolyee['federalidentificationnumber'] = $this->input->post('federalidentificationnumber');
-        $data_empolyee['federaltaxclassification']    = $this->input->post('federaltaxclassification');
-        $data_empolyee['email']                       = $this->input->post('email');
-        $data_empolyee['sc']                          = $this->input->post('sc');
-        $data_empolyee['address_line_1']              = $this->input->post('address_line_1');
-        $data_empolyee['address_line_2']              = $this->input->post('address_line_2');
-        $data_empolyee['social_security_number']      = $this->input->post('ssn');
-        $data_empolyee['routing_number']              = $this->input->post('routing_number');
-        $data_empolyee['sales_partner']               = 'Sales_Partner';
-        $data_empolyee['choice']                      = $this->input->post('choice');
-        $data_empolyee['account_number']              = $this->input->post('account_number');
-        $data_empolyee['bank_name']                   = $this->input->post('bank_name');
-        $data_empolyee['country']                     = $this->input->post('country');
-        $data_empolyee['city']                        = $this->input->post('city');
-        $data_empolyee['zip']                         = $this->input->post('zip');
-        $data_empolyee['state']                       = $this->input->post('state');
-        $data_empolyee['emergencycontact']            = $this->input->post('emergencycontact');
-        $data_empolyee['emergencycontactnum']         = $this->input->post('emergencycontactnum');
-        $data_empolyee['withholding_tax']             = $this->input->post('withholding_tax');
-        $data_empolyee['last_name']                   = $this->input->post('last_name');
-        $data_empolyee['profile_image']               = $profile_image;
-        $data_empolyee['create_by']                   = $this->session->userdata('user_id');
-        $data_empolyee['e_type']                      = 2;
-        $data_empolyee['sp_withholding']              = $this->input->post('choice');
-        // State Tax Information
-        $state_tax        = $this->input->post('state_tax');
-        $living_state_tax = $this->input->post('living_state_tax');
-        if ($state_tax == $living_state_tax) {
-            $data_empolyee['working_state_tax'] = $state_tax;
-        } else {
-            $data_empolyee['working_state_tax'] = $state_tax;
-            $data_empolyee['living_state_tax']  = $living_state_tax;
-        }
-        // Local (City) Tax Information
-        $city_tax        = $this->input->post('city_tax');
-        $living_city_tax = $this->input->post('living_city_tax');
-        if ($city_tax == $living_city_tax) {
-            $data_empolyee['working_city_tax'] = $city_tax;
-        } else {
-            $data_empolyee['working_city_tax'] = $city_tax;
-            $data_empolyee['living_city_tax']  = $living_city_tax;
-        }
-        //  City Tax Information
-        $county_tax        = $this->input->post('county_tax');
-        $living_county_tax = $this->input->post('living_county_tax');
-        if ($county_tax == $living_county_tax) {
-            $data_empolyee['working_county_tax'] = $county_tax;
-        } else {
-            $data_empolyee['working_county_tax'] = $county_tax;
-            $data_empolyee['living_county_tax']  = $living_county_tax;
-        }
-        // Other Tax Info
-        $other_working_tax = $this->input->post('other_working_tax');
-        $other_living_tax  = $this->input->post('other_living_tax');
-        if ($county_tax == $county_tax) {
-            $data_empolyee['working_other_tax'] = $other_working_tax;
-        } else {
-            $data_empolyee['working_other_tax'] = $other_working_tax;
-            $data_empolyee['living_other_tax']  = $other_living_tax;
-        }
-        $living_state_tax                   = $this->input->post('living_state_tax');
-        $data_empolyee['working_state_tax'] = $state_tax;
-        $data_empolyee['living_state_tax']  = $living_state_tax;
-        // Local (City) Tax Information
-        $city_tax                          = $this->input->post('city_tax');
-        $living_city_tax                   = $this->input->post('living_city_tax');
-        $data_empolyee['working_city_tax'] = $city_tax;
-        $data_empolyee['living_city_tax']  = $living_city_tax;
-        //  City Tax Information
-        $county_tax                          = $this->input->post('county_tax');
-        $living_county_tax                   = $this->input->post('living_county_tax');
-        $data_empolyee['working_county_tax'] = $county_tax;
-        $data_empolyee['living_county_tax']  = $living_county_tax;
-        // Other Tax Info
-        $other_working_tax                  = $this->input->post('other_working_tax');
-        $other_living_tax                   = $this->input->post('other_living_tax');
-        $data_empolyee['working_other_tax'] = $other_working_tax;
-        $data_empolyee['living_other_tax']  = $other_living_tax;
-        logEntry($this->session->userdata('user_id'), $this->session->userdata('unique_id'), '', '', $this->session->userdata('userName'), 'Add Sales Partner', 'Human Resource', 'Sales Partner has been Added successfully', 'Add', date('m-d-Y'));
-        $this->db->insert('employee_history', $data_empolyee);
-        $this->session->set_flashdata('message', display('save_successfully'));
-        redirect(base_url("Chrm/manage_employee?id=" . $this->input->post('company_id') . "&admin_id=" . $this->input->post('admin_id')));
+        echo json_encode($response);
     }
 
     public function employee_create() 
@@ -3077,7 +3406,8 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         echo json_encode($response);
     }
     // Manage Employee Index  - hr
-    public function getEmployeeDatas() {
+    public function getEmployeeDatas() 
+    {
         $encodedId      = isset($_GET['id']) ? $_GET['id'] : null;
         $encodedAdmin   = isset($_GET['admin_id']) ? $_GET['admin_id'] : null;
         $decodeAdmin    = decodeBase64UrlParameter($encodedAdmin);
@@ -3091,11 +3421,17 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         $items          = $this->Hrm_model->getPaginatedEmployee($limit, $start, $orderField, $orderDirection, $search, $decodedId);
         $data           = [];
         $i              = $start + 1;
-        foreach ($items as $item) {
-            $profile = '<a href="' . base_url('Chrm/employee_details?id=' . $encodedId . '&admin_id=' . $encodedAdmin . '&employee=' . $item['id']) . '" class="btnclr btn m-b-5 m-r-2"><i class="fa fa-user"></i></a>';
-            $empinv  = '<a href="' . base_url('Chrm/timesheed_inserted_data?id=' . $encodedId . '&admin_id=' . $encodedAdmin . '&employee=' . $item['id'] . '&type=emp_data') . '" class="btnclr btn m-b-5 m-r-2"><i class="fa fa-download" aria-hidden="true"></i></a>';
-            $edit    = '<a href="' . base_url('Chrm/employee_update_form?id=' . $encodedId . '&admin_id=' . $encodedAdmin . '&employee=' . $item['id']) . '" class="btnclr btn m-b-5 m-r-2" data-toggle="tooltip" data-placement="left" title="' . display('update') . '"><i class="fa fa-pencil" aria-hidden="true"></i></a>';
+        foreach ($items as $item) { 
+
+            $profile = '<a href="' . base_url('Chrm/employee_details?id=' . $encodedId . '&admin_id=' . $encodedAdmin . '&' . ($item['e_type'] == 1 ? 'employee' : 'salespartner') . '=' . $item['id']) . '" class="btnclr btn m-b-5 m-r-2"><i class="fa fa-user"></i></a>';
+
+           $empinv = '<a href="' . base_url('Chrm/timesheed_inserted_data?id=' . $encodedId . '&admin_id=' . $encodedAdmin . '&' . ($item['e_type'] == 1 ? 'employee=' . $item['id'] : 'salespartner=' . $item['id']) . '&type=' . ($item['e_type'] == 1 ? 'emp_data' : 'sp_data')) . '" class="btnclr btn m-b-5 m-r-2"> <i class="fa fa-download" aria-hidden="true"></i> </a>';
+
+            $edit = '<a href="' . base_url('Chrm/' . ($item['e_type'] == 1 ? 'employee_update_form' : 'salespartner_update_form') . '?id=' . $encodedId . '&admin_id=' . $encodedAdmin . '&' . ($item['e_type'] == 1 ? 'employee' : 'salespartner') . '=' . $item['id']) . '" class="btnclr btn m-b-5 m-r-2" data-toggle="tooltip" data-placement="left" title="' . display('update') . '"><i class="fa fa-pencil" aria-hidden="true"></i></a>';
+
+
             $delete  = '<a href="' . base_url('Chrm/employee_delete?id=' . $encodedId . '&admin_id=' . $encodedAdmin . '&employee=' . $item['id']) . '" class="btnclr btn" style="margin-bottom: 5px;"  onclick="return confirm(\'' . display('are_you_sure') . '\')" data-toggle="tooltip" data-placement="right" title="' . display('delete') . '"><i class="fa fa-trash-o" aria-hidden="true"></i></a>';
+
             $row     = [
                 "id"                     => $i,
                 "first_name"             => $item['first_name'] . ' ' . $item['middle_name'] . ' ' . $item['last_name'],
@@ -3109,6 +3445,7 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
                 "routing_number"         => $item['routing_number'],
                 "account_number"         => $item['account_number'],
                 "employee_tax"           => $item['employee_tax'],
+                "e_type"                 => ($item['e_type'] == 1) ? '<span class="badge" style="background-color: #28a745;">Employee</span>' : '<span class="badge" style="background-color: #007bff;">Sales Partner</span>',
                 'action'                 => $profile . $empinv . $edit . $delete,
             ];
             $data[] = $row;
@@ -3152,14 +3489,20 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         $content = $this->CI->parser->parse("hr/w9_form", $data, true);
         $this->template->full_admin_html_view($content);
     }
-    public function employee_details() {
-        $this->CI->load->model('Web_settings');
-        $this->load->model('Hrm_model');
+    public function employee_details() 
+    {   
+        $emp_id = $this->input->get('employee', TRUE);
+        $salespartner_id = $this->input->get('salespartner', TRUE);
+
+        $data['emp_id'] = !empty($emp_id) ? $emp_id : $salespartner_id;
+
         list($user_id, $company_id) = array_map('decodeBase64UrlParameter', [$_GET['id'], $_GET['admin_id']]);
-        $emp_id                     = !empty($_GET['employee']) ? $_GET['employee'] : 0;
+        $emp_id                     = !empty($emp_id) ? $emp_id : 0;
         $data['setting_detail']     = $this->CI->Web_settings->retrieve_setting_editdata();
         $data['title']              = display('employee_update');
-        $data['row']                = $this->Hrm_model->employee_detl($emp_id);
+
+        $data['row'] = $emp_id ? $this->Hrm_model->employee_detl($data['emp_id'], $user_id) : $this->Hrm_model->employee_salespartner($data['emp_id'], $user_id);
+        
         $content                    = $this->parser->parse('hr/resumepdf', $data, true);
         $this->template->full_admin_html_view($content);
     }

@@ -11,18 +11,10 @@ class Lcompany {
 	}
 
 	#==============Company list================#
-	public function company_list($limit, $page, $links)
+	public function company_list($user_id)
 	{
 		$company_list = $this->CI->Companies->company_list($limit, $page);
 		$company_info = $this->CI->Companies->company_info();
-
-		$i = $page;
-		if(!empty($company_list)){	
-			foreach($company_list as $key => $v){
-				$i++;
-			   $company_list[$key]['sl'] = $i;
-			}
-		}
 
 		$data = array(
 			'title'        => display('manage_company'),
@@ -30,7 +22,6 @@ class Lcompany {
 			'company_info' => $company_info,
 			'company_id' => $company_info[0]['company_id'],
 			'company_admin_info' => $this->CI->Companies->company_admin_info(),
-			'links'        => $links,
 			'setting_detail' => $this->CI->Web_settings->retrieve_setting_editdata()
 		);
 
@@ -80,9 +71,6 @@ class Lcompany {
 	#===============Company edit form==============#
 	public function company_edit_data($company_id)
 	{
-		$this->CI =& get_instance();
-		$this->CI->load->model('Companies');
-		$this->CI->load->model('Web_settings');
 		$company_detail = $this->CI->Companies->retrieve_company_editdata($company_id);
 		$editstate = $this->CI->Companies->editstatedata();
 		$editlocal = $this->CI->Companies->editlocaldata();
@@ -125,8 +113,6 @@ class Lcompany {
 		$companyList = $this->CI->parser->parse('company/edit_company_form',$data,true);
 		return $companyList;
 	}
-
-
 
 }
 ?>

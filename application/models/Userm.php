@@ -18,6 +18,33 @@ class Userm extends CI_Model {
         return $query->result_array();
     }
 
+    // Delete Company Existing Records
+    public function delete_existing_records($company_id)
+    {
+        $this->db->where('company_id', $company_id);
+        $this->db->delete('company_information');
+
+        $this->db->where('company_id', $company_id);
+        $this->db->delete('url');
+        
+        $this->db->where('company_id', $company_id);
+        $this->db->delete('url_st');
+        
+        $this->db->where('company_id', $company_id);
+        $this->db->delete('url_lctx');
+        
+        $this->db->where('company_id', $company_id);
+        $this->db->delete('url_sstx');
+
+        $query = $this->db->get_where('company_information', array('company_id' => $company_id));
+        if ($query->num_rows() > 0) {
+            return false; 
+        }
+        
+        return true; 
+    }
+
+
     # ===  ===  ===  === Count Company ===  ===  ===  ===  = #
     public function count_user() {
         return $this->db->count_all( 'users' );

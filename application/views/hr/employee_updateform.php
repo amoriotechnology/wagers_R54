@@ -216,7 +216,7 @@
                               <select name="country" class="form-control">
                                  <option value="">Select Country</option>
                                  <?php foreach($country_data as $value) { ?>
-                                    <option value="<?= $value['nickname']; ?>" <?= ((!empty($employee_data[0]['country']) && ($employee_data[0]['country'] == $value['nickname'])) ? 'selected' : ''); ?> > <?= $value['name']; ?> </option>
+                                    <option value="<?= $value['name']; ?>" <?= ((!empty($employee_data[0]['country']) && ($employee_data[0]['country'] == $value['name'])) ? 'selected' : ''); ?> > <?= $value['name']; ?> </option>
                                  <?php } ?>
                               </select>
                            </div>
@@ -574,16 +574,13 @@
                                  <?php
                                     echo '<div class="file-container">';
                                     foreach ($employee_data as $attachment) {
-                                        $Final_files = explode(",", $attachment['files']);
-                                        foreach ($Final_files as $file) {
-                                            $encoded_file = rawurlencode(trim($file));
-                                            if(empty($employee_data[0]['sales_partner'])) {
-                                             echo '<span class="file-item"><a href="' . base_url() . 'assets/uploads/employeedetails/' . $encoded_file . '" target="_blank">' . trim($file) . '</a></span>';
-                                             echo '<input type="hidden" name="old_image[]" value="' . trim($file) . '">';
-                                            } else {
-                                                echo '<p><a href="' . base_url() . 'assets/uploads/salespartner/' . $encoded_file . '" target="_blank">' . trim($file) . '</a></p>';
-                                            }
-                                        }
+                                       $Final_files = explode(",", $attachment['files']);
+                                       foreach ($Final_files as $file) {
+                                          $encoded_file = rawurlencode(trim($file));
+                  
+                                          echo '<span class="file-item"><a href="' . base_url() . 'assets/uploads/employeedetails/' . $encoded_file . '" target="_blank">' . trim($file) . '</a></span>';
+                                          echo '<input type="hidden" name="old_image[]" value="' . trim($file) . '">';
+                                       }
                                     }
                                     echo '</div>';
                                  ?>
@@ -626,7 +623,7 @@
 
 
 <script>
-   // const dt = new DataTransfer(); // Permet de manipuler les fichiers de l'input file      
+   const dt = new DataTransfer(); 
       $("#attachment").on('change', function(e){
           // alert('hi');
           for(var i = 0; i < this.files.length; i++){
@@ -636,27 +633,20 @@
             .append(fileName);
             $("#filesList > #files-names").append(fileBloc);
           };
-          // Ajout des fichiers dans l'objet DataTransfer
           for (let file of this.files) {
               dt.items.add(file);
           }
-          // Mise à jour des fichiers de l'input file après ajout
           this.files = dt.files;
       
-          // EventListener pour le bouton de suppression créé
           $('span.file-delete').click(function(){
               let name = $(this).next('span.name').text();
-              // Supprimer l'affichage du nom de fichier
               $(this).parent().remove();
               for(let i = 0; i < dt.items.length; i++){
-                  // Correspondance du fichier et du nom
                   if(name === dt.items[i].getAsFile().name){
-                      // Suppression du fichier dans l'objet DataTransfer
                       dt.items.remove(i);
                       continue;
                   }
               }
-              // Mise à jour des fichiers de l'input file après suppression
               document.getElementById('attachment').files = dt.files;
           });
       });
@@ -777,22 +767,6 @@
        validateDropdown('in_department');
        return false;
      }
-   // $(document).ready(function(){
-   //     $('#payroll_type').change(function(){
-   //         var selectedOption = $(this).val();
-   //         if(selectedOption === 'Hourly') {
-   //             $('#cost').text('Pay rate (Hourly)').show(); // Show the label
-   //             $('#hrate').show(); // Show the input field
-   //         } else if (selectedOption === 'SalesCommission') {
-   //             $('#cost').hide(); // Hide the label
-   //             $('#hrate').hide(); // Hide the input field
-   //         } else {
-   //             $('#cost').text('Pay rate (Daily)').show(); // Show the label
-   //             $('#hrate').show(); // Show the input field
-   //         }
-   //     });
-   // });
-   
    
     
    var payrollTypeSelect = document.getElementById('payroll_type');

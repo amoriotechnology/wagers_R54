@@ -102,11 +102,12 @@ $this->db->update('state_and_tax', $data1);
         return $query->result_array();
    }
 }
-                                 //=========================General======================//
-  public function getPaginatedEmployee($limit, $offset, $orderField, $orderDirection, $search, $Id) {
+
+  //=========================General======================//
+    public function getPaginatedEmployee($limit, $offset, $orderField, $orderDirection, $search, $Id) {
         $this->db->select('e.*,d.designation as des_name');
         $this->db->from('employee_history e');
-        $this->db->join('designation d', 'd.id = e.designation'); 
+        $this->db->join('designation d', 'd.id = e.designation AND e.designation IS NOT NULL AND e.e_type != 2', 'left');
         if ($search != "") {
             $this->db->group_start();
             $this->db->like('first_name', $search);
@@ -127,19 +128,19 @@ $this->db->update('state_and_tax', $data1);
         $this->db->limit($limit);
         $this->db->order_by('e.id', $orderDirection);
         $query  = $this->db->get();
-       
         $result = $query->result_array();
         return $result;
     }
+
     public function updateData($table, $data, $where) {
-    $this->db->set($data)->where($where)->update($table);
-    if($this->db->affected_rows() > 0) {
-        return true;
-    } else {
-        return false;
+        $this->db->set($data)->where($where)->update($table);
+        if($this->db->affected_rows() > 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
-}
-//Used in Employee Update form
+
  public function curn_info_default($currency_details, $decodedId) {
         $this->db->select('*');
         $this->db->from('currency_tbl');
@@ -173,8 +174,8 @@ public function state_tax_list_employer()
         return $query->result_array();
     }
 }
-public function get_employee_sal($id,$user_id)
-{
+    public function get_employee_sal($id,$user_id)
+    {
         $this->db->select('h_rate,total_hours,extra_amount, SUM(extra_ytd) as extraytd , SUM(ytd) as ytd,SUM(sc_amount) as sc_amount');
         $this->db->from('timesheet_info');
         $this->db->where('templ_name', $id);
@@ -185,6 +186,7 @@ public function get_employee_sal($id,$user_id)
          }
         return true;
     }
+
   public function total_unemployment($id, $user_id)
     {
         $user_id = $this->session->userdata('user_id');
@@ -2731,6 +2733,14 @@ public function payroll_editdata($id){
         $this->db->update('employee_history',$postData);
         return true;
     }
+    
+    // Update Sales Partner
+    public function update_salespartner($id, $data_salespartner)
+    {
+        $this->db->where('id', $id);
+        $this->db->update('employee_history',$data_salespartner);
+        return true;
+    }
 public function getTaxdetailsdata($tax){
         $this->db->select('*');
         $this->db->from('state_localtax');
@@ -2769,19 +2779,33 @@ public function getTaxdetailsdata($tax){
         $this->db->delete('tax_history_employer');  
         return true;
     }
-      public function employee_detl($id){
+    public function employee_detl($id, $user_id){
         $this->db->select('*');
         $this->db->from('employee_history a');
-         $this->db->join('designation b','a.designation = b.designation');
+        $this->db->join('designation b','a.designation = b.designation');
         $this->db->where('a.id', $id);
-           $this->db->where('a.create_by',$this->session->userdata('user_id'));
+        $this->db->where('a.create_by',$user_id);
         $query = $this->db->get();
         if ($query->num_rows() > 0) {
             return $query->result_array();
         }
         return false;
-   }
-      public function employee_details($id){
+    }
+
+    public function employee_salespartner($id, $user_id)
+    {
+        $this->db->select('*');
+        $this->db->from('employee_history');
+        $this->db->where('id', $id);
+        $this->db->where('create_by',$user_id);
+        $query = $this->db->get();
+        if ($query->num_rows() > 0) {
+            return $query->result_array();
+        }
+        return false;
+    }
+    
+    public function employee_details($id){
         $this->db->select('*');
         $this->db->from('employee_history ');
         $this->db->where('id', $id);
@@ -2912,13 +2936,12 @@ public function timesheet_data_emp()
 public function getPaginatedpayslip($limit, $offset, $orderField, $orderDirection, $search, $date = null, $emp_name = 'All')
 {
     $this->db->select('a.*,b.*,c.*, a.amount as total_period');
+
     if ($date) {
-        $dates = explode(' to ', $date);
-        $start_date = $dates[0];
-        $end_date = $dates[1];  
-        $this->db->where('a.cheque_date >=', $start_date);
-        $this->db->where('a.cheque_date <=', $end_date);
+        $date_range = $this->parse_date_range($date);
+        $this->db->where("a.end BETWEEN '{$date_range['start_date']}' AND '{$date_range['end_date']}'");
     }
+
     if ($emp_name !== 'All') {
         $trimmed_emp_name = trim($emp_name);
         $this->db->group_start();
@@ -2937,6 +2960,8 @@ public function getPaginatedpayslip($limit, $offset, $orderField, $orderDirectio
         $this->db->or_like("b.last_name", $search);
         $this->db->or_like("b.middle_name", $search);
         $this->db->or_like("b.employee_tax", $search);
+        $this->db->or_like("a.total_hours", $search);
+        $this->db->or_like("a.extra_hour", $search);
         $this->db->group_end();
     }
     $this->db->where('a.uneditable', '1');
@@ -2946,22 +2971,21 @@ public function getPaginatedpayslip($limit, $offset, $orderField, $orderDirectio
         $this->db->where('a.unique_id',$this->session->userdata('unique_id'));
     }
     $this->db->limit($limit, $offset);
-    $this->db->order_by('a.id', 'desc'); 
+    $this->db->order_by('a.id', $orderDirection); 
     $query = $this->db->get();
+    
     if ($query === false) {
         return false;
     }
     return $query->result_array();
 }
+
 public function getPaginatedscchoiceyes($limit, $offset, $orderField, $orderDirection, $search, $date = null, $emp_name = 'All')
 {
     $this->db->select('a.*,b.*,c.*');
     if ($date) {
-        $dates = explode(' to ', $date);
-        $start_date = $dates[0];
-        $end_date = $dates[1];  
-        $this->db->where('a.cheque_date >=', $start_date);
-        $this->db->where('a.cheque_date <=', $end_date);
+        $date_range = $this->parse_date_range($date);
+        $this->db->where("a.end BETWEEN '{$date_range['start_date']}' AND '{$date_range['end_date']}'");
     }
     if ($emp_name !== 'All') {
         $trimmed_emp_name = trim($emp_name);
@@ -2976,16 +3000,18 @@ public function getPaginatedscchoiceyes($limit, $offset, $orderField, $orderDire
     if (!empty($search)) {
         $this->db->group_start();
         $this->db->like("a.timesheet_id", $search);
-        $this->db->or_like("c.first_name", $search);
-        $this->db->or_like("c.last_name", $search);
-        $this->db->or_like("c.middle_name", $search);
-        $this->db->or_like("c.employee_tax", $search);
+        $this->db->or_like("b.first_name", $search);
+        $this->db->or_like("b.last_name", $search);
+        $this->db->or_like("b.middle_name", $search);
+        $this->db->or_like("b.employee_tax", $search);
+        $this->db->or_like("a.total_hours", $search);
+        $this->db->or_like("a.extra_hour", $search);
         $this->db->group_end();
     }
     $this->db->where('c.choice', 'Yes');
     $this->db->where('a.payroll_type', 'Sales Partner');
     $this->db->limit($limit, $offset);
-    $this->db->order_by('a.id', 'desc'); 
+    $this->db->order_by('a.id', $orderDirection); 
     $query = $this->db->get();
     if ($query === false) {
         return [];
@@ -2996,11 +3022,8 @@ public function getPaginatedscpayslip($limit, $offset, $orderField, $orderDirect
 {
     $this->db->select('a.*,b.*');
     if ($date) {
-        $dates = explode(' to ', $date);
-        $start_date = $dates[0];
-        $end_date = $dates[1];  
-        $this->db->where('a.cheque_date >=', $start_date);
-        $this->db->where('a.cheque_date <=', $end_date);
+        $date_range = $this->parse_date_range($date);
+        $this->db->where("a.end BETWEEN '{$date_range['start_date']}' AND '{$date_range['end_date']}'");
     }
     if ($emp_name !== 'All') {
         $trimmed_emp_name = trim($emp_name);
@@ -3019,13 +3042,15 @@ public function getPaginatedscpayslip($limit, $offset, $orderField, $orderDirect
         $this->db->or_like("b.last_name", $search);
         $this->db->or_like("b.middle_name", $search);
         $this->db->or_like("b.employee_tax", $search);
+        $this->db->or_like("a.total_hours", $search);
+        $this->db->or_like("a.extra_hour", $search);
         $this->db->group_end();
     }
     $this->db->where('a.uneditable', '1');
     $this->db->where('a.payroll_type', 'Sales Partner');
     $this->db->where('b.choice', 'No');
     $this->db->limit($limit, $offset);
-    $this->db->order_by('a.id', 'desc'); 
+    $this->db->order_by('a.id', $orderDirection); 
     $query = $this->db->get();
     if ($query === false) {
         return [];
@@ -3036,11 +3061,8 @@ public function getTotalpayslip($search, $date, $emp_name = 'All')
 {
     $this->db->select('a.*,b.*,c.*');
     if ($date) {
-        $dates = explode(' to ', $date);
-        $start_date = $dates[0];
-        $end_date = $dates[1];  
-        $this->db->where('a.cheque_date >=', $start_date);
-        $this->db->where('a.cheque_date <=', $end_date);
+        $date_range = $this->parse_date_range($date);
+        $this->db->where("a.end BETWEEN '{$date_range['start_date']}' AND '{$date_range['end_date']}'");
     }
     if ($emp_name !== 'All') {
         $trimmed_emp_name = trim($emp_name);
@@ -3060,6 +3082,8 @@ public function getTotalpayslip($search, $date, $emp_name = 'All')
         $this->db->or_like("b.last_name", $search);
         $this->db->or_like("b.middle_name", $search);
         $this->db->or_like("b.employee_tax", $search);
+        $this->db->or_like("a.total_hours", $search);
+        $this->db->or_like("a.extra_hour", $search);
         $this->db->group_end();
     }
     $this->db->where('a.uneditable', '1');
@@ -3443,4 +3467,48 @@ public function add_payment_type($postData)
     $query = $this->db->get();
     return $query->result_array();
 }
+
+// Delete Tax List
+public function delete_payrolldata($id, $tax_type)
+{
+    $this->db->where('id', $id);    
+    if($tax_type == 'citytax'){
+      $delete = $this->db->delete('city_tax_info');
+    }else if($tax_type == 'countytax'){
+      $delete = $this->db->delete('county_tax_info');
+    }else{
+      $delete = $this->db->delete('state_localtax');
+    }
+    return $delete;
+}
+
+// Delete Federal Tax List
+public function delete_federaldata($id)
+{
+    $this->db->where('id', $id);    
+    $delete = $this->db->delete('federal_tax');
+    return $delete;
+}
+
+public function delete_weeklydata($id)
+{
+    $this->db->where('id', $id);    
+    $delete = $this->db->delete('weekly_tax_info');
+    return $delete;
+}
+
+public function delete_biweeklydata($id)
+{
+    $this->db->where('id', $id);    
+    $delete = $this->db->delete('biweekly_tax_info');
+    return $delete;
+}
+
+public function delete_monthlydata($id)
+{
+    $this->db->where('id', $id);    
+    $delete = $this->db->delete('monthly_tax_info');
+    return $delete;
+}
+
 }

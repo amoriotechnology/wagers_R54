@@ -30,30 +30,21 @@ class Company_setup extends CI_Controller {
 	#===============Companybranch===========#
 	public function company_branch()
 	{	
-		// $company_id = $this->input->post('company_id');
         $content = $this->lcompany->company_branch_total();
 		$this->template->full_admin_html_view($content);
 	}
 
 
 	#================Manage Company==============#
-	public function manage_company()
+	public function manage_company() 
 	{
-		$config = array();
-		$config["base_url"] = base_url()."Company_setup/manage_company";
-		$config["total_rows"] = $this->Companies->count_company();	  
-		$config["per_page"] = 15;
-		$config["uri_segment"] = 3;	
-		$config['full_tag_open'] = '<div id="pagination">';
-		$config['full_tag_close'] = '</div>';
-		$this->pagination->initialize($config);
-		
-		$page = ($this->uri->segment(3)) ? $this->uri->segment(3) : 0;
-		$limit = $config["per_page"];
-	    $links = $this->pagination->create_links();
-        $content = $this->lcompany->company_list($limit,$page,$links);
-		$this->template->full_admin_html_view($content);
-	}
+       $id = isset($_GET['id']) ? $_GET['id'] : '';
+       $admin_id = isset($_GET['admin_id']) ? $_GET['admin_id'] : '';
+       $decodedId = decodeBase64UrlParameter($id);
+       $companyLists = $this->Companies->company_info($decodedId);
+       $content = $this->parser->parse('company/company', $companyLists, true);
+        $this->template->full_admin_html_view($content);
+    }
 
 	#===============Company update form================#
 	public function company_update_form()
@@ -62,6 +53,53 @@ class Company_setup extends CI_Controller {
 		$content = $this->lcompany->company_edit_data($company_id);
 		$this->template->full_admin_html_view($content);
 	}
+
+	// Compnay listing Function
+	public function companyLists() 
+    {
+        $encodedId      = isset($_GET['id']) ? $_GET['id'] : null;
+        $encodedAdmin   = isset($_GET['admin_id']) ? $_GET['admin_id'] : null;
+        $decodeAdmin    = decodeBase64UrlParameter($encodedAdmin);
+        $decodedId      = decodeBase64UrlParameter($encodedId);
+        $limit          = $this->input->post('length');
+        $start          = $this->input->post('start');
+        $search         = $this->input->post('search')['value'];
+        $orderField     = $this->input->post("columns")[$this->input->post("order")[0]["column"]]["data"];
+        $orderDirection = $this->input->post("order")[0]["dir"];
+        $totalItems     = $this->Companies->getTotalCompanyListdata($limit, $start, $search, $decodedId, $orderDirection);
+        $items          = $this->Companies->getPaginatedCompany($limit, $start, $orderField, $orderDirection, $search, $decodedId);
+        $data           = [];
+        $i              = $start + 1;
+        foreach ($items as $item) { 
+
+            $edit = '<a href="' . base_url("Company_setup/company_update_form?id=" . $encodedId . "&admin_id=" . $encodedAdmin . "&company_id=" . $item["company_id"]) . '" class="btnclr btn m-b-5 m-r-2" data-toggle="tooltip" data-placement="left" title="" data-original-title="Update"><i class="fa fa-pencil" aria-hidden="true"></i></a>';
+
+            $company_id   = encodeBase64UrlParameter($item['company_id']);
+            $admin_id   = encodeBase64UrlParameter($item['unique_id']);
+
+            $redirect = '<a href="' . base_url("chrm/manage_employee?id=" . $company_id . "&admin_id=" . $admin_id) . '" class="btnclr btn m-b-5 m-r-2" data-toggle="tooltip" data-placement="left" title="Hr" data-original-title="Hr" target="_blank"><i class="fa fa-external-link" aria-hidden="true"></i></a>';
+
+            $row     = [
+                "company_id"             => $i,
+                "username"           => $item['username'],
+                "company_name"           => $item['company_name'],
+                "address"                => $item['address'],
+                "mobile"                 => $item['mobile'],
+                "website"                => $item['website'],
+                'action'                 => $edit . " " . $redirect,
+            ];
+            $data[] = $row;
+            $i++;
+        }
+        $response = [
+            "draw"            => $this->input->post('draw'),
+            "recordsTotal"    => $totalItems,
+            "recordsFiltered" => $totalItems,
+            "data"            => $data,
+        ];
+        echo json_encode($response);
+    }
+
 	#===============Company update===================#
 public function company_update()
 {

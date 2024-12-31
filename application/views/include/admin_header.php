@@ -6,9 +6,18 @@
    $CI->load->model('Hrm_model');
    $Web_settings = $CI->Web_settings->retrieve_setting_editdata();
    $retrieve_user_data = $CI->Web_settings->retrieve_user_data();
-   $retrieve_admin_data = $CI->Web_settings->retrieve_admin_data();
-    $state_tax_list = $CI->Hrm_model->state_tax_list();
-    $state_tax_list_employer = $CI->Hrm_model->state_tax_list_employer();
+   
+
+   $user_comp_id = isset($_GET['id']) ? $_GET['id'] : null;
+   $adminId = isset($_GET['admin_id']) ? $_GET['admin_id'] : null;
+   $userId   = decodeBase64UrlParameter($user_comp_id);
+   $adminId   = decodeBase64UrlParameter($adminId);
+
+
+   $retrieve_admin_data = $CI->Web_settings->retrieve_admin_data($userId, $adminId);
+
+   $state_tax_list = $CI->Hrm_model->state_tax_list();
+   $state_tax_list_employer = $CI->Hrm_model->state_tax_list_employer();
    $state_tax_list = is_array($state_tax_list) ? $state_tax_list : [];
    $state_tax_list_employer = is_array($state_tax_list_employer) ? $state_tax_list_employer : [];
    function compare_tax($a, $b) {
@@ -155,7 +164,7 @@
                      <div class="menuCol col-xl-3 col-lg-3 col-md-12">
                         <ul class="dropdown-submenu">
                          <li class="menu-title" style="color:#17202a"><b><?php echo ('User Details');  ?></b></li>
-                           <li><a href="<?php echo base_url('Company_setup/manage_company') ?>"><i class="ti-settings"></i>&nbsp;&nbsp;Manage My Company</a></li>
+                           <li> <a href="<?php echo base_url('Company_setup/manage_company?id=' . $encode_com_id . '&admin_id=' . $encode_admin_id); ?>"> <i class="ti-settings"></i>&nbsp;&nbsp;Manage My Company </a> </li>
                            <li><a href="<?php echo base_url('User/manage_user') ?>"><i class="ti-settings"></i>&nbsp;&nbsp;Manage Users </a></li>
                            <li><a href="<?php echo base_url('Admin_dashboard/edit_profile') ?>"><i class="pe-7s-users"></i> <?php  echo  display('user_profile'); ?></a></li>
                          <li><a href=" <?php echo base_url('Admin_dashboard/change_password_form') ?>"><i class="pe-7s-settings"></i><?php   echo display('Change Password'); ?></a></li>
@@ -180,8 +189,7 @@
                         </ul>
                      </div>
                        <div class="menuCol col-xl-3 col-lg-3 col-md-12">
-                          <ul class="dropdown-submenu">
- <li class="menu-title" style="color:#17202a"><b><?php echo ('LogOut');  ?></b></li>
+                          <ul class="dropdown-submenu"><li class="menu-title" style="color:#17202a"><b><?php echo ('LogOut');  ?></b></li>
                            <li><a href="<?php echo base_url('Admin_dashboard/logout') ?>"><i class="fa fa-sign-out"></i>&nbsp;&nbsp;<?php echo display('logout');  ?></a></li>
                            </ul>
                            </div>
@@ -243,13 +251,13 @@
             <?php if($_SESSION['u_type']==1) { ?>
             <p>Super User </p>
             <?php } elseif($_SESSION['u_type']==2) { ?>
-            <p style="margin-left: -30px;text-wrap: wrap;"><?php //echo ($retrieve_admin_data[0]['first_name'].' '.$retrieve_admin_data[0]['last_name']);?> </p>
-            <p style="color:white;"> <?php echo $_SESSION['unique_id']; ?>   </p>
+            <p style="margin-left: -30px;text-wrap: wrap;"><?php echo ($retrieve_admin_data[0]['username']);?> </p>
+            <p style="color:white;"> <?php echo ($retrieve_admin_data[0]['unique_id']);?>   </p>
             <?php } elseif($_SESSION['u_type']==3) { ?>
-            <p style="margin-left: -30px;text-wrap: wrap;">  <?php echo ($retrieve_user_data[0]['first_name'].' '.$retrieve_user_data[0]['last_name']);?> <?php 
+            <p style="margin-left: -30px;text-wrap: wrap;"><?php echo ($retrieve_user_data[0]['username']);?> <?php 
                $data=$this->session->all_userdata();
             ?></p>
-            <p style="color:white;"> <?php  echo $_SESSION['unique_id']; ?>   </p>
+            <p style="color:white;"> <?php echo ($retrieve_admin_data[0]['unique_id']);?>   </p>
             <?php } ?>
          </div>
       </div>
@@ -308,8 +316,8 @@
          if(trim($split[0])=='hrm'){
       ?>
       <!-- Human Resource New menu start -->
-      <li class="treeview  ">
-         <a href="javascript:void(0)>
+      <li class="treeview">
+         <a href="javascript:void(0)">
             <i class="fa fa-balance-scale"></i><span><?php  echo display('hrm_management'); ?></span>
             <span class="pull-right-container">
             <i class="fa fa-angle-left pull-right"></i>

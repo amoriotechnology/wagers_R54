@@ -1,8 +1,7 @@
-
 <style>
 .switch-input[disabled] + .switch-label {
     pointer-events: none;
-    background-color: #f2f2f2;
+    background-color: #f2f2f2; 
     color: #999; 
 }
 
@@ -145,7 +144,6 @@
     background-color: inherit;
     border-radius: 4px;
     padding: 8px;
-
 }
 input {border:0;outline:0;}
 .work_table td {
@@ -167,6 +165,10 @@ th,td{
 }
 .m-3 {
     margin: 2rem;
+}
+
+.error{
+    font-size: 14px;
 }
 </style>
 
@@ -195,10 +197,7 @@ th,td{
                         <a style="float:right;color:white;" href="<?php echo base_url('Chrm/manage_timesheet?id=' . $_GET['id'] . '&admin_id=' . $_GET['admin_id']); ?>" class="btnclr btn m-b-5 m-r-2"><i class="ti-align-justify"> </i> <?php echo "Manage TimeSheet" ?> </a>
                     </div>
                 </div>
-                
-              
-                <?=form_open_multipart('Chrm/adminApprove', 'id="validate"')?>
-
+                <?=form_open_multipart('Chrm/adminApprove', 'id="datavalidate"')?>
                 <div class="panel-body">
                     <div class="form-group row">
                         <div class="col-sm-6">
@@ -247,24 +246,24 @@ th,td{
                                     <?php if ($employee_name[0]['payroll_type'] == 'Hourly') {?>
                                         <th style='height:25px;' class="col-md-2">Date</th>
                                         <th style='height:25px;' class="col-md-1">Day</th>
-                                        <th class="col-md-1">Daily Break in mins</th>
+                                        <th class="col-md-1">Daily Break in mins <a class="btnclr client-add-btn btn dailyBreak" aria-hidden="true" style="color:white;border-radius: 5px; padding: 5px 10px 5px 10px;" data-toggle="modal" data-target="#dailybreak_add"><i class="fa fa-plus"></i></a>
+                                        </th>
                                         <th style='height:25px;' class="col-md-2">Start Time (HH:MM)</th>
                                         <th style='height:25px;' class="col-md-2">End Time (HH:MM)</th>
                                         <th style='height:25px;' class="col-md-5">Hours</th>
                                         <th style='height:25px;' class="col-md-5">Over Time</th>
-                                        <th style='height:25px;' class="col-md-5">Action</th>
+                                        <?php if ($time_sheet_data[0]['uneditable'] != '1') { echo "<th style='height:25px;' class='col-md-5'>Action</th>"; } ?>
 
                                     <?php } elseif ($employee_name[0]['payroll_type'] != 'Hourly') {?>
                                         <th style='height:25px;' class="col-md-2">Date</th>
                                         <th style='height:25px;' class="col-md-1">Day</th>
                                         <th style='height:25px;' class="col-md-1">Present / Absent</th>
                                     <?php } elseif ($employee_name[0]['payroll_type'] == 'SalesCommission') {?>
-                                      
                                     <?php }?>
                                 </tr>
                             </thead>
 
-                            <?php
+<?php
 function compareDates($a, $b) {
     $dateA = DateTime::createFromFormat('d/m/Y', $a['Date']);
     $dateB = DateTime::createFromFormat('d/m/Y', $b['Date']);
@@ -290,7 +289,6 @@ if (!empty($time_sheet_data)) {
     
     usort($time_sheet_data, 'compareDates');
     $printedDates = array();
-
 
     foreach ($time_sheet_data as $tsheet) {
         $timesheetdata[$tsheet['Date']] = ['date' => $tsheet['Date'], 'day' => $tsheet['Day'], 'edit' => $tsheet['uneditable'], 'start' => $tsheet['time_start'], 'end' => $tsheet['time_end'], 'per_hour' => $tsheet['hours_per_day'], 'check' => $tsheet['present'], 'break' => $tsheet['daily_break'], 'over_time' => $tsheet['over_time']];
@@ -330,21 +328,27 @@ if (!empty($time_sheet_data)) {
                                 <td class="hours-worked">
                                     <input readonly name="sum[]" class="timeSum hourly_tot_<?php echo $data_id; ?>" value="<?=empty($date) ? 'readonly' : $timesheetdata[$date]['per_hour'];?>" type="text">
                                 </td>
+
                                 <td class="overtime">
                                     <input readonly name="over_time[]" class="overTime_<?php echo $data_id; ?>" value="<?=empty($timesheetdata[$date]['over_time']) ? '0.00' : $timesheetdata[$date]['over_time'];?>" type="text">
                                 </td>
-                                <td>
-                                    <a style='color:white;' class="delete_day btnclr btn  m-b-5 m-r-2"><i class="fa fa-trash" aria-hidden="true"></i> </a>
-                                </td>
+
+                                <?php if($time_sheet_data[0]['uneditable'] != 1) { ?>
+                                    <td>
+                                        <a style="color: white;" class="delete_day btnclr btn m-b-5 m-r-2" >
+                                            <i class="fa fa-trash" aria-hidden="true"></i>
+                                        </a>
+                                    </td>
+                                <?php } ?>
 
                                 <?php if ($end_week == $timesheetdata[$date]['day']) {
-            echo '<tr>
+                                    echo '<tr>
                                         <td colspan="5" class="text-right" style="font-weight:bold;">Weekly Total Hours:</td>
                                         <td> <input type="text" class="weekly_hour" name="hour_weekly_total[]" id="hourly_' . $data_id . '" value="' . $weekly_data[$j] . '"> </td>
                                     </tr>';
-            $data_id++;
-            $j++;
-        }?>
+                                    $data_id++;
+                                    $j++;
+                                }?>
 
                                 <?php } elseif ($employee_name[0]['payroll_type'] == 'Salaried-weekly' || $employee_name[0]['payroll_type'] == 'Salaried-BiWeekly' || $employee_name[0]['payroll_type'] == 'Salaried-Monthly' || $employee_name[0]['payroll_type'] == 'Salaried-BiMonthly') {?>
                                 <td class="date">
@@ -361,31 +365,26 @@ if (!empty($time_sheet_data)) {
 
                                 <?php } elseif ($employee_name[0]['payroll_type'] == 'SalesCommission') {}?>
                             </tr>
-                            <?php
-}
-}?>
+                            <?php } } ?>
                         </tbody>
                         <?php } else {?>
 
                         <tbody id="tBody">
                             <?php
-if (!empty($time_sheet_data)) {
-
-  
-    usort($time_sheet_data, 'compareDates');
-    $printedDates = array();
-    foreach ($time_sheet_data as $tsheet) {
-        $timesheetdata[$tsheet['Date']] = ['date' => $tsheet['Date'], 'day' => $tsheet['Day'], 'edit' => $tsheet['uneditable'], 'start' => $tsheet['time_start'], 'end' => $tsheet['time_end'], 'per_hour' => $tsheet['hours_per_day'], 'check' => $tsheet['present'], 'break' => $tsheet['daily_break']];
-        if (empty($tsheet['hours_per_day']) && !in_array($tsheet['Date'], $printedDates)) {
-            $printedDates[] = $tsheet['Date'];
-        }
-    }
-    $data_id     = 0;
-    $weekly_data = json_decode($time_sheet_data[0]['weekly_hours']);
-    for ($j = 0; $j < $get_days; $j++) {
-        $date = date('m/d/Y', strtotime($start_date . ' +' . $j . ' day'));
-    
-        ?>
+                            if (!empty($time_sheet_data)) {
+                                usort($time_sheet_data, 'compareDates');
+                                $printedDates = array();
+                                foreach ($time_sheet_data as $tsheet) {
+                                    $timesheetdata[$tsheet['Date']] = ['date' => $tsheet['Date'], 'day' => $tsheet['Day'], 'edit' => $tsheet['uneditable'], 'start' => $tsheet['time_start'], 'end' => $tsheet['time_end'], 'per_hour' => $tsheet['hours_per_day'], 'check' => $tsheet['present'], 'break' => $tsheet['daily_break']];
+                                    if (empty($tsheet['hours_per_day']) && !in_array($tsheet['Date'], $printedDates)) {
+                                        $printedDates[] = $tsheet['Date'];
+                                    }
+                                }
+                                $data_id     = 0;
+                                $weekly_data = json_decode($time_sheet_data[0]['weekly_hours']);
+                                for ($j = 0; $j < $get_days; $j++) {
+                                $date = date('m/d/Y', strtotime($start_date . ' +' . $j . ' day'));
+                            ?>
                             <tr>
                                 <?php if ($employee_name[0]['payroll_type'] == 'Hourly') {?>
                                 <td class="date">
@@ -415,12 +414,12 @@ if (!empty($time_sheet_data)) {
                                     <a style='color:white;' class="delete_day btnclr btn  m-b-5 m-r-2"><i class="fa fa-trash" aria-hidden="true"></i> </a>
                                 </td>
                                 <?php if ($end_week == $timesheetdata[$date]['day']) {
-            echo '<tr>
+                                    echo '<tr>
                                         <td colspan="5" class="text-right" style="font-weight:bold;">Weekly Total Hours:</td>
                                         <td> <input type="text" class="weekly_hour" name="hour_weekly_total[]" id="hourly_' . $data_id . '" value="' . $weekly_data[$i] . '" readonly> </td>
                                     </tr>';
-            $data_id++;
-        }?>
+                                    $data_id++;
+                                }?>
 
                                 <?php } elseif ($employee_name[0]['payroll_type'] != 'Hourly') {?>
                                 <td class="date">
@@ -553,8 +552,7 @@ $mins      = $time_sheet_data[0]['total_hours'] - $working_hour;
 
                     <?php } else {?>
                     <input type="hidden" readonly id="above_extra_beforehours"
-                    value="<?php echo $time_sheet_data[0]['total_hours'];
-    ?>" name="above_extra_beforehours" />
+                    value="<?php echo $time_sheet_data[0]['total_hours'];?>" name="above_extra_beforehours" />
                     <input type="hidden" id="above_extra_rate" name="above_extra_rate" value="<?php echo $employee_name[0]['hrate']; ?>" />
                     <input type="hidden" id="above_extra_sum" name="above_extra_sum" value="<?php echo $time_sheet_data[0]['total_hours'] * $employee_name[0]['hrate']; ?>" />
                     <input type="hidden" id="extra_this_hour" name="extra_this_hour" value="<?php echo !empty($get_value) ? $get_value : 0; ?>" />
@@ -633,7 +631,7 @@ $mins      = $time_sheet_data[0]['total_hours'] - $working_hour;
                                 </div>
 
                                 <div class="col-sm-6">
-                                    <select id="selector" name="payment_method" onchange="yesnoCheck(this);"  class="form-control" required >
+                                    <select id="selector" name="payment_method" onchange="yesnoCheck(this);" class="form-control" required>
                                         <option value="">Select Payment Method</option>
                                         <option value="Cheque" <?=($time_sheet_data[0]['payment_method'] == "Cheque") ? 'Selected' : '';?>>Cheque/Check </option>
                                         <option value="Bank" <?=($time_sheet_data[0]['payment_method'] == "Bank") ? 'Selected' : '';?>>Bank</option>
@@ -715,10 +713,10 @@ $mins      = $time_sheet_data[0]['total_hours'] - $working_hour;
 
                 <div class="col-sm-12 m-3" align="center">
                 <?php
-$isDisabled  = $time_sheet_data[0]['uneditable'] == 1 ? 'disabled' : '';
-$buttonStyle = 'float:right; color:white; background-color: #38469f;';
-$mouseEvents = $time_sheet_data[0]['uneditable'] == 1 ? 'onmouseover="showToast()" onmouseleave="hideToast()"' : '';
-?>
+                    $isDisabled  = $time_sheet_data[0]['uneditable'] == 1 ? 'disabled' : '';
+                    $buttonStyle = 'float:right; color:white; background-color: #38469f;';
+                    $mouseEvents = $time_sheet_data[0]['uneditable'] == 1 ? 'onmouseover="showToast()" onmouseleave="hideToast()"' : '';
+                ?>
                 <input type="submit" style="<?=$buttonStyle?>" value="Generate pay slip" class="btn btn-info m-b-5 m-r-2" <?=$isDisabled?> <?=$mouseEvents?> />
 
                 </div>
@@ -730,6 +728,11 @@ $mouseEvents = $time_sheet_data[0]['uneditable'] == 1 ? 'onmouseover="showToast(
         </div>
     </section>
 </div>
+
+<?php 
+   $modaldata['bootstrap_modals'] = array('daily_break');
+   $this->load->view('include/bootstrap_modal', $modaldata);
+?>
 
 <script>
 function yesnoCheck(that) {
@@ -867,24 +870,13 @@ function getTimesheet(start, end) {
 }
 
 function converToMinutes(s) {
-    var c = s.split('.');
+    var c = s.split(':');
     return parseInt(c[0]) * 60 + parseInt(c[1]);
 }
 
 function parseTime(s) {
-    return Math.floor(parseInt(s) / 60) + "." + parseInt(s) % 60
+    return Math.floor(parseInt(s) / 60) + ":" + parseInt(s) % 60
 }
-
-// $('body').on('keyup','.end',function(){
-
-//     var start = $(this).closest('tr').find('.strt').val();
-//     var end = $(this).closest('td').find('.end').val();
-//     var breakv = $('#dailybreak').val();
-
-//     var calculate = parseInt(start)+parseInt(end);
-//     var final = calculate-parseInt(breakv);
-
-// });
 
 $(document).on('select change', '#templ_name', function () {
     var data = {
@@ -927,115 +919,65 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-$(document).on('select change', '.end','.dailybreak', function () {
-    var $begin = $(this).closest('tr').find('.start').val();
-    var $end = $(this).closest('tr').find('.end').val();
-    let valuestart = moment($begin, "HH:mm");
-    let valuestop = moment($end, "HH:mm");
-    let timeDiff = moment.duration(valuestop.diff(valuestart));
-    var dailyBreakValue = parseInt($(this).closest('tr').find('.dailybreak').val()) || 0;
-    var totalMinutes = timeDiff.asMinutes() - dailyBreakValue;
-    var hours = Math.floor(totalMinutes / 60);
-    var minutes = totalMinutes % 60;
-    var formattedTime = hours.toString().padStart(2, '0') + '.' + minutes.toString().padStart(2, '0');
-    if (isNaN(parseFloat(formattedTime))) {
-        $(this).closest('tr').find('.timeSum').val('00:00');
-    } else {
-        $(this).closest('tr').find('.timeSum').val(formattedTime);
-    }
-    var data_id = $(this).data('id');
-    var total_netH = 0;
-    var total_netM = 0;
-    var week_netH = 0;
-    var week_netM = 0;
-    $('.table').each(function () {
-        var tableTotal = 0;
-        var tableHours = 0;
-        var tableMinutes = 0;
-        var weekTotal = 0;
-        var weekHours = 0;
-        var weekMinutes = 0;
-        console.log(data_id,  'Outer');
-        $(this).find('.hourly_tot_'+data_id).each(function() {
-            console.log(data_id,  'Inner');
-            var total_week = $(this).val();
-            if (!isNaN(total_week) && total_week.length !== 0) {
-                var [weekhour, weekmin] = total_week.split('.').map(parseFloat);
-                weekHours += weekhour;
-                weekMinutes += weekmin;
-            }
-        });
-
-        week_netH += weekHours;
-        week_netM += weekMinutes;
-    });
-    var timeConvertion = convertToTime(week_netH, week_netM);
-    $('#hourly_'+data_id).val(timeConvertion).trigger('change');
-
-    debugger;
-     var tableHours = 0;
-     var tableMinutes = 0;
-    $('.weekly_hour').each(function () {
-
-        var time = $(this).val().trim();
-        if (time && time.includes(':')) {
-            var [hours, minutes] = time.split(':').map(function (val) {
-                return parseInt(val, 10); // Convert hours and minutes to integers
-            });
-            tableHours += hours;
-            tableMinutes += minutes;
-        }
-    });
-  if (tableMinutes >= 60) {
-        tableHours += Math.floor(tableMinutes / 60);
-        tableMinutes = tableMinutes % 60;
-    }
-   var timeConvertion = convertToTime(tableHours, tableMinutes);
-    $('#total_net').val(timeConvertion).trigger('change');
+// End Date
+$(document).on('select change', '.start', function onStartDateChange() {
+    handleTimeCalculation($(this).closest('tr'));
 });
 
-$(document).on('select change', '.start','.dailybreak', function () {
-    var $begin = $(this).closest('tr').find('.start').val();
-    var $end = $(this).closest('tr').find('.end').val();
-    let valuestart = moment($begin, "HH:mm");
-    let valuestop = moment($end, "HH:mm");
+$(document).on('select change', '.end', function onEndDateChange() {
+    handleTimeCalculation($(this).closest('tr'));
+});
+
+$(document).on('select change', '.dailybreak', function onDailyBreakChange() {
+    handleTimeCalculation($(this).closest('tr'));
+});
+
+function handleTimeCalculation(row) {
+    var begin = row.find('.start').val();
+    var end = row.find('.end').val();
+    let valuestart = moment(begin, "HH:mm");
+    let valuestop = moment(end, "HH:mm");
     let timeDiff = moment.duration(valuestop.diff(valuestart));
-    var dailyBreakValue = parseInt($(this).closest('tr').find('.dailybreak').val()) || 0;
+    var dailyBreakValue = parseInt(row.find('.dailybreak').val()) || 0; 
     var totalMinutes = timeDiff.asMinutes() - dailyBreakValue;
     var hours = Math.floor(totalMinutes / 60);
     var minutes = totalMinutes % 60;
-    var formattedTime = hours.toString().padStart(2, '0') + '.' + minutes.toString().padStart(2, '0');
+
+    var formattedTime = hours.toString().padStart(2, '0') + ':' + minutes.toString().padStart(2, '0');
+
     if (isNaN(parseFloat(formattedTime))) {
-        $(this).closest('tr').find('.timeSum').val('00:00');
-    }else{
-        $(this).closest('tr').find('.timeSum').val(formattedTime);
+        row.find('.timeSum').val('00:00');
+    } else {
+        row.find('.timeSum').val(formattedTime);
     }
-    var data_id = $(this).data('id');
+
+    var data_id = row.find('.start, .end').data('id');
     var total_netH = 0;
     var total_netM = 0;
     var week_netH = 0;
     var week_netM = 0;
+
     $('.table').each(function () {
-        var tableTotal = 0;
         var tableHours = 0;
         var tableMinutes = 0;
-        var weekTotal = 0;
         var weekHours = 0;
         var weekMinutes = 0;
-        $(this).find('.hourly_tot_'+data_id).each(function() {
+
+        $(this).find('.hourly_tot_' + data_id).each(function () {
             var total_week = $(this).val();
-            if (!isNaN(total_week) && total_week.length !== 0) {
-                var [weekhour, weekmin] = total_week.split('.').map(parseFloat);
-                weekHours += weekhour;
-                weekMinutes += weekmin;
+            if (total_week && typeof total_week === 'string' && total_week.includes(':')) {
+                var [weekhour, weekmin] = total_week.split(':').map(Number);
+                weekHours += weekhour || 0;
+                weekMinutes += weekmin || 0;
             }
         });
         week_netH += weekHours;
         week_netM += weekMinutes;
+
         $(this).find('.timeSum').each(function () {
             var precio = $(this).val();
-            if (!isNaN(precio) && precio.length !== 0) {
-                var [hours, minutes] = precio.split('.').map(parseFloat);
+            if (precio && typeof precio === 'string' && precio.includes(':')) {
+                var [hours, minutes] = precio.split(':').map(parseFloat);
                 tableHours += hours;
                 tableMinutes += minutes;
             }
@@ -1043,11 +985,21 @@ $(document).on('select change', '.start','.dailybreak', function () {
         total_netH += tableHours;
         total_netM += tableMinutes;
     });
+
+    var overtimeMinutes = Math.max(0, totalMinutes - 480); 
+    var overtimeHours = Math.floor(overtimeMinutes / 60);
+    var overtimeMinutesRemaining = overtimeMinutes % 60;
+    var overtimeFormatted = overtimeHours.toString().padStart(2, '0') + ':' + overtimeMinutesRemaining.toString().padStart(2, '0');
+
+    row.find('input[name="over_time[]"]').val(overtimeMinutes > 0 ? overtimeFormatted : '00:00');
+
     var timeConvertion = convertToTime(week_netH, week_netM);
-    $('#hourly_'+data_id).val(timeConvertion).trigger('change');
-    var timeConvertion = convertToTime(total_netH,total_netM);
-    $('#total_net').val(timeConvertion).trigger('change');
-});
+    $('#hourly_' + data_id).val(timeConvertion).trigger('change');
+    var totalTimeConvertion = convertToTime(total_netH, total_netM);
+    $('#total_net').val(totalTimeConvertion).trigger('change');
+}
+
+
 
 function sumHours () {
     var time1 = $begin.timepicker().getTime();
@@ -1082,7 +1034,7 @@ $(document).on('change', '.weekly_hour', function () {
         var time = $(this).val().trim();
         if (time && time.includes(':')) {
             var [hours, minutes] = time.split(':').map(function (val) {
-                return parseInt(val, 10); // Convert hours and minutes to integers
+                return parseInt(val, 10); 
             });
             tableHours += hours;
             tableMinutes += minutes;
@@ -1116,15 +1068,6 @@ $(document).on('click', '.delete_day', function() {
     var timeConversion = convertToTime(total_netH, total_netM);
     $('#total_net').val(timeConversion).trigger('change');
 
-    var firstDate = $('.date input').first().val();
-    var lastDate = $('.date input').last().val();
-    function convertDateFormat(dateStr) {
-        const [day, month, year] = dateStr.split('/');
-        return `${month}/${day}/${year}`;
-    }
-    var firstDateMDY = convertDateFormat(firstDate);
-    var lastDateMDY = convertDateFormat(lastDate);
-    $('#reportrange').val(firstDateMDY + ' - ' + lastDateMDY);
 });
 
 function convertToTime(hr,min) {
@@ -1155,5 +1098,27 @@ function showToast() {
 function hideToast() {
     toastr.clear();
 }
+
+
+$("#datavalidate").validate({
+    rules: {
+      cheque_no: "required",
+      cheque_date: "required",  
+      administrator_person: "required",  
+      payment_method: "required",  
+      bank_name: "required",
+      payment_refno: "required",
+      cash_date: "required"
+    },
+    messages: {
+      cheque_no: "Cheque no is required",
+      cheque_date: "Cheque date is required",
+      administrator_person: "Administrator Person is required",
+      payment_method: "Payment Method is required",
+      bank_name: "Bank Name is required",
+      payment_refno: "Payment Reference No is required",
+      cash_date: "Cash Date is required"
+    }
+});
 
 </script>

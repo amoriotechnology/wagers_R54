@@ -116,7 +116,8 @@
                                         <th width="7%">Routing number</th>
                                         <th width="7%">Account Number</th>
                                         <th width="7%">Employee Tax</th>
-                                            <th width="7%"><?= display('action') ?></th>
+                                        <th width="7%">Type</th>
+                                        <th width="7%"><?= display('action') ?></th>
                                         </tr>
                                 </thead>
                             </table>
@@ -128,7 +129,6 @@
 
 
 <script>
-
    $(document).ready(function() {
         if ($.fn.DataTable.isDataTable('#employee_list')) {
             $('#employee_list').DataTable().clear().destroy();
@@ -163,11 +163,12 @@
                  { "data": "routing_number" , "className": "style-column"},
                  { "data": "account_number", "className": "style-column" },
                  { "data": "employee_tax" },
+                 { "data": "e_type" },
                  { "data": "action" },
             ],
             "order": [[0, "desc"]],
             "columnDefs": [
-                { "orderable": false, "targets": [0, 11] }
+                { "orderable": false, "targets": [0, 12] }
             ],
             "pageLength": 10,
             "colReorder": true,

@@ -82,7 +82,7 @@ label {
                      <br/>
                         <?php if(!empty($row[0]['profile_image'])) { ?>                     
                            <div class="col-md-12">
-                              <img src="<?= base_url('assets/images/'.$row[0]['profile_image']); ?>" class="pro_pic" alt="Profile Picture" width="100px" height="100px">
+                              <img src="<?= base_url('assets/uploads/profile/' . ($row[0]['e_type'] == 1 ? $row[0]['profile_image'] : 'salespartner/' . $row[0]['profile_image'])); ?>" class="pro_pic" alt="Profile Picture" width="100px" height="100px">
                               <br><br>
                            </div>
                         <?php } ?>

@@ -30,8 +30,10 @@
 <div class="panel panel-default thumbnail">
   <?php $arr = preg_split("/\s+(?=\S*+$)/", $company_info[0]["address"]);?>
   <div class="panel-body">
-    <p align="right"> <a id="download" style="color:white;background-color:#38469f;"
-      class='btn btn-primary'> <i class="fa fa-download"></i><?php echo display("Download"); ?></a>
+    <p align="right"> 
+      <a id="download" class='btn btnclr'> <i class="fa fa-download"></i><?php echo display("Download"); ?>
+      </a>
+      <a href="<?php echo base_url('Chrm/pay_slip_list?id='.$_GET['id'].'&admin_id='.$_GET['admin_id']); ?>" style="color:white;" class="btnclr btn"><i class="ti-align-justify"> </i> Manage Payslip </a>
     </p>
     <div id="content" style="margin-left:12px;padding:10px;">
       <div class="row" style="padding:0px;width:780px;">
@@ -45,8 +47,7 @@
               <p style="padding-left:430px;margin-top: 50px;"><?php echo date("m-d-Y"); ?></p>
             </div>
             <div class="r" style="height:23px;">
-              <p style="width: 385px;margin-top: 53px;  display: block;"><?php echo $fs . " " . strtoupper($employee_info[0]["middle_name"]) .
-" " . strtoupper($employee_info[0]["last_name"]); ?></p>
+              <p style="width: 385px;margin-top: 53px;  display: block;"><?php echo $fs . " " . strtoupper($employee_info[0]["middle_name"]) ." " . strtoupper($employee_info[0]["last_name"]); ?></p>
             </div>
             <div class="r amount_word" style="width: 535px;float:center"></div>
             <div class="custom-row net_period" style="float:right"></div>
@@ -70,9 +71,7 @@
         <div class="col-md-6">
           <p style='float:right;font-size:12px;'>
             <strong style='font-size:18px;'><?php echo isset($employee_info[0]["first_name"]) ? $employee_info[0]["first_name"] . " " : ""; ?>
-              <?php echo isset($employee_info[0]["middle_name"]) ? $employee_info[0]["middle_name"] . " " : ""; ?> <?php echo isset($employee_info[0]["last_name"])
-? $employee_info[0]["last_name"] : ""; ?></strong><br> <?php echo htmlspecialchars($employee_info[0]["address_line_1"]
-) . " " . htmlspecialchars($employee_info[0]["city"]) . " " . htmlspecialchars($employee_info[0]["zip"]); ?> <br />
+              <?php echo isset($employee_info[0]["middle_name"]) ? $employee_info[0]["middle_name"] . " " : ""; ?> <?php echo isset($employee_info[0]["last_name"]) ? $employee_info[0]["last_name"] : ""; ?></strong><br> <?php echo htmlspecialchars($employee_info[0]["address_line_1"]) . " " . htmlspecialchars($employee_info[0]["city"]) . " " . htmlspecialchars($employee_info[0]["zip"]); ?> <br />
             <span style="display: inline-block; ">Designation : <?php echo $employee_info[0]["des"]; ?></span>
             <br />
             <span style="display: inline-block; ">Employee ID : <?php echo $employee_info[0]["id"]; ?></span>

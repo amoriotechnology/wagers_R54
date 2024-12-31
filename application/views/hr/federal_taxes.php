@@ -42,7 +42,7 @@
       <div class="row">
          <div class="col-sm-12">
             <div class="panel panel-default" style="border:3px solid #d7d4d6;" >
-     <div class="panel-body">
+               <div class="panel-body">
                   <div class="row">
                      <button class="btnclr btn" style="margin-left: 20px !important;" data-toggle="modal" data-target="#allForms"><i class="fa fa-wpforms" aria-hidden="true"></i> Forms</button>
                   </div>
@@ -207,7 +207,6 @@
                   <div class="row">
                      <h3 class="col-sm-3" style="margin: 0;">City Taxes</h3>
                      <div class="col-sm-9 text-right">
-                           <!-- <a href="#" data-toggle="modal" data-target="#add_city" class="btnclr btn"> Add City </a> -->
                         <a href="#" data-toggle="modal" data-target="#add_city_info"   class="btnclr btn"> Add City </a>
                         <a href="#" data-toggle="modal" data-target="#add_city_tax"   class="btnclr btn">Add City Tax </a>
                      </div>
@@ -235,7 +234,9 @@
                                              
                                           if(!empty($sp) && $sp !==','){
                                              $sp_url= str_replace(" "," ",$sp);
-                                             echo "<tr ><td style='display:none;' class='citystate_name'>". $city_list[$i]['state']."</td><td style='width:450px;text-align: center;' class='citytax_value'>".$sp."</td> <td>  <a  href=".base_url('Chrm/add_state_taxes_detail?tax='.urlencode($city_list[$i]['state'])."-".urlencode($sp_url))." class='btn btnclr btn-sm' data-toggle='tooltip' data-placement='left'  data-original-title='Add Taxes Detail'><i class='fa fa-window-restore' aria-hidden='true'></i></a>
+                                             echo "<tr ><td style='display:none;' class='citystate_name'>". $city_list[$i]['state']."</td><td style='width:450px;text-align: center;' class='citytax_value'>".$sp."</td> <td>  
+                                            
+                                             <a href=".base_url('Chrm/add_citydetails?id=' . urlencode($_GET['id']) . '&admin_id=' . urlencode($_GET['admin_id']) . '&taxtype=' .'citytax'. '&tax=' . urlencode($city_list[$i]['state']) . "-" . urlencode($sp_url))." class='btn btnclr btn-sm' data-toggle='tooltip' data-placement='left'  data-original-title='Add Taxes Detail'><i class='fa fa-window-restore' aria-hidden='true'></i></a>
                                              <a class='delete_item_city btn btnclr btn-sm' onclick='return confirm('Are you sure you want to delete this?');'><i class='fa fa-trash' aria-hidden='true'></i></a>     </td></tr></td>";
                                           } else {
                                              echo "<tr><td style='display:none' class='citystate_name'>". $city_list[$i]['state']."</td><td style='width:485px;' style='display:none'>&nbsp</td> <td>  
@@ -292,7 +293,9 @@
                                        foreach($splt as $sp){
                                           if(!empty($sp) && $sp !==','){
                                              $sp_url= str_replace(" "," ",$sp);
-                                             echo "<tr><td style='display:none' class='county_name'>". $county_list[$i]['state']."</td><td style='width:450px;text-align:center;' class='countytax_value'>".$sp."</td> <td>  <a  href=".base_url('Chrm/add_state_taxes_detail?tax='.urlencode($county_list[$i]['state'])."-".urlencode($sp_url))." class='btn btnclr btn-sm' data-toggle='tooltip' data-placement='left'  data-original-title='Add Taxes Detail'><i class='fa fa-window-restore' aria-hidden='true'></i></a>
+                                             echo "<tr><td style='display:none' class='county_name'>". $county_list[$i]['state']."</td><td style='width:450px;text-align:center;' class='countytax_value'>".$sp."</td> 
+
+                                             <td><a  href=".base_url('Chrm/add_countydetails?id=' . urlencode($_GET['id']) . '&admin_id=' . urlencode($_GET['admin_id']) . '&taxtype=' .'countytax'. '&tax=' . urlencode($county_list[$i]['state']) . "-" . urlencode($sp_url))." class='btn btnclr btn-sm' data-toggle='tooltip' data-placement='left'  data-original-title='Add Taxes Detail'><i class='fa fa-window-restore' aria-hidden='true'></i></a>
                                                 <a  class='delete_itemcounty btn btnclr btn-sm' onclick='return confirm('Are you sure you want to delete this?');'><i class='fa fa-trash' aria-hidden='true'></i></a>     </td></tr></td>";
                                           } else {
                                              echo "<tr><td style='display:none' class='county_name'>". $county_list[$i]['state']."</td><td style='width:485px;' style='display:none'>&nbsp</td> <td>

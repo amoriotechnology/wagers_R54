@@ -1,10 +1,6 @@
-
-
-
-
+<link rel="stylesheet" type="text/css" href="<?php echo base_url()?>assets/css/toastr.min.css" />
+<script src="<?php echo base_url()?>assets/js/toastr.min.js" /></script>
 <!-- Add new tax start -->
-
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
 <div class="content-wrapper">
 
     <section class="content-header" style="height:70px;">
@@ -129,7 +125,7 @@ tbody tr td:first-child:before
 
                     <div class="panel-title">
 
-                       <a style="float:right;color:white;" href="<?php echo base_url('Chrm/payroll_setting') ?>" class="btnclr btn  m-b-5 m-r-2"><i class="ti-align-justify"> </i> <?php echo display('Taxes') ?> </a>
+                       <a style="float:right; color:white;" href="<?php echo base_url('Chrm/payroll_setting?id='.$_GET['id'].'&admin_id='.$_GET['admin_id']); ?>" class="btnclr btn  m-b-5 m-r-2"><i class="ti-align-justify"> </i> Manage Taxes </a>
 
                     </div>
 
@@ -145,6 +141,7 @@ tbody tr td:first-child:before
 <input type="hidden" name="tax_name" value="Federal unemployment"/>
 <input type ="hidden"  id="admin_company_id" value="<?php echo $_GET['id'];  ?>" name="admin_company_id" />
 <input type ="hidden" id="adminId" value="<?php echo $_GET['admin_id'];  ?>" name="adminId" />
+<input type="hidden" class="txt_csrfname" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
 
 
 
@@ -195,7 +192,10 @@ tbody tr td:first-child:before
         <tr>
             <td></td>
 
-            <td class="paddin5ps" required><input  type="text" class="form-control" id="start_amount" value="<?php if($tax['employer']){ echo $tax['employer'];}else{echo "0";} ?>" name="employer[]"  required/></td>
+            <td class="paddin5ps" required>
+                <input  type="text" class="form-control" id="start_amount" value="<?php if($tax['employer']){ echo $tax['employer'];}else{echo "0";} ?>" name="employer[]"  required/>
+                <input  type="hidden" class="form-control" id="row_id" value="<?php if($tax['id']){ echo $tax['id'];}else{echo "0";} ?>" />
+            </td>
 
             <td class="paddin5ps"><input  type="text" class="form-control" id="end_amount" value="<?php if($tax['employee']){ echo $tax['employee'];}else{echo "0";} ?>"  name="employee[]"  required/></td>
 
@@ -214,7 +214,7 @@ tbody tr td:first-child:before
 
              <td class="paddin5ps"><input  type="text" class="form-control" id="head_household_from" value="<?php if($tax['head_household']){ $split=explode('-',$tax['head_household']); if($split[0]){ echo $split[0];}else{echo "0";}} ?>"  name="head_household_from[]"  required/></td>
               <td class="paddin5ps"><input  type="text" class="form-control" id="head_household_to" value="<?php if($tax['head_household']){ $split=explode('-',$tax['head_household']); if($split[1]){ echo $split[1];}else{echo "0";}} ?>"  name="head_household_to[]"  required/></td>
- <td class="paddin5ps"><button type="button" id="delPOIbutton" class="btn btn-danger"  value="Delete" onclick="deleteTaxRow(this)"><i class="fa fa-trash"></i></button></td>
+             <td class="paddin5ps"><button type="button" id="delPOIbutton" class="btn btn-danger getDataRow"  value="Delete" onclick="deleteTaxRow(this)"><i class="fa fa-trash"></i></button></td>
 
             <td class="paddin5ps"><button type="button" id="addmorePOIbutton" style="color:white;" class="btnclr btn"  value="Add More POIs" onclick="TaxinsRow()"><i class="fa fa-plus-circle"></button></td>
    
@@ -291,6 +291,39 @@ tbody tr td:first-child:before
 
 <!-- Add new tax end -->
 
+<script>
+    var csrfName = $('.txt_csrfname').attr('name'); 
+    var csrfHash = $('.txt_csrfname').val();
 
+    $('.alert').delay(1000).fadeOut('slow');
+
+    $('.getDataRow').on('click', function() {
+       var rowId = $(this).closest('tr').find('#row_id').val();
+       var confirmDelete = confirm("Are you sure you want to delete this?");
+       if (confirmDelete) {
+          $.ajax({
+             url:"<?php echo base_url(); ?>Caccounts/delete_federal",
+             type: 'POST',
+             data: {[csrfName]: csrfHash,rowId:rowId},
+             success: function(data){
+                toastr.success("Successfully Deleted", "Success", { 
+                   closeButton: false,
+                   timeOut: 1000
+                });
+
+                setTimeout(function() {
+                   location.reload();
+                }, 1000);
+             },
+             error: function(xhr, status, error) {
+                toastr.error(error, "Error", { 
+                   closeButton: false,
+                   timeOut: 1000
+                });
+             }
+          });
+       }
+    });
+</script>
 
 

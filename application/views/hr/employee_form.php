@@ -613,7 +613,7 @@
 
          <!-- Sales Partner -->
           <div class="panel-body" id="salesPartnerForms" style="display: none;">
-            <?php echo form_open_multipart('Chrm/salespartner_create',array('onsubmit' => 'return validateForm()') ) ?>
+            <form id="salespartnerInsertForm" method="post" enctype="multipart/form-data">
             <div class="row">
                <!-- Left Side -->
                <div class="col-sm-6">
@@ -694,7 +694,7 @@
                         <select name="country" class="form-control">
                            <option value="">Select Country</option>
                            <?php foreach($country_data as $value) { ?>
-                              <option value="<?= $value['nickname']; ?>"> <?= $value['name']; ?> </option>
+                              <option value="<?= $value['name']; ?>" <?= $value['name'] === 'UNITED STATES' ? 'selected' : ''; ?>> <?= $value['name']; ?> 
                            <?php } ?>
                         </select>
                      </div>
@@ -718,7 +718,7 @@
                   <div class="form-group row" id="payment_from">
                      <label for="city" class="col-sm-4 col-form-div"><?php echo  ('Sales Commission') ?></label>
                      <div class="col-sm-8">
-                        <input name="sc" class="form-control" type="text" placeholder="<?php echo 'sales commission percentage' ?>">
+                        <input name="sc" class="form-control" type="text" placeholder="<?php echo 'Sales Commission Percentage' ?>" oninput="salesCommisionInput(this)">
                      </div>
                   </div>
                   <div class="form-group row" id="payment_from">
@@ -769,7 +769,7 @@
                         </select>
                      </div>
                      <div class="col-sm-1">
-                        <a  class="btnclr client-add-btn btn" aria-hidden="true"    data-toggle="modal" data-target="#payment_type" ><i class="fa fa-plus"></i></a>
+                        <a  class="btnclr client-add-btn btn clearPaymentType" aria-hidden="true"    data-toggle="modal" data-target="#payment_type" ><i class="fa fa-plus"></i></a>
                      </div>
                   </div>
                   
@@ -887,7 +887,7 @@
                         </select>
                      </div>
                      <div class="col-sm-1">
-                        <a data-toggle="modal" href="#add_bank_info"   class="btn btnclr"><i class="fa fa-plus"></i></a>
+                        <a data-toggle="modal" href="#add_bank_info" class="btn btnclr addbank_info"><i class="fa fa-plus"></i></a>
                      </div>
                   </div>
                   <div class="form-group row">
@@ -1012,23 +1012,23 @@
                      <br>
                   </div>
                   <div class="form-group row">
-                     <label for="withholding_tax" class="col-sm-4 col-form-label">Withholding Tax</label>
+                     <label for="withholding_tax" class="col-sm-4 col-form-label">Withholding Tax <span class="text-danger">*</span></label>
                      <div class="col-sm-8">
                         <button type="button" class="btnclr btn" id="showPopupsalespartner">Add Withholding Tax</button>
                      </div>
                   </div>
 
                   <div class="form-group row">
-                     <label for="ETA" class="col-sm-4 col-form-label"><?php echo display('Attachments ') ?></label>
+                     <label for="ETA" class="col-sm-4 col-form-label"><?php echo display('Attachments') ?></label>
                         <div class="col-sm-6">
                            <p>
-                              <label for="attachment">
+                              <label for="salesattachment">
                               <a class="btnclr btn text-light" role="button" aria-disabled="false"><i class="fa fa-upload"></i>&nbsp; Choose Files</a>
                               </label>
-                              <input type="file" name="files[]" class="upload" style="visibility: hidden; position: absolute;" multiple/>
+                              <input type="file" name="salespartnerfiles[]" id="salesattachment" class="upload" style="visibility: hidden; position: absolute;" multiple accept=".pdf, .docx, .txt, .png, .jpg"/>
                            </p>
-                           <p id="files-area">
-                              <span id="filesList"><span id="files-names"></span></span>
+                           <p id="salesfiles-area">
+                              <span id="salesfilesList"><span id="salesfiles-names"></span></span>
                            </p>
                         </div>
                   </div>
@@ -1038,7 +1038,7 @@
                      Profile Image
                      </label>
                      <div class="col-sm-8">
-                        <input type="file" name="profile_image" class="form-control">
+                        <input type="file" name="profile_image" class="form-control" accept=".png, .jpg, .jpeg">
                      </div>
                   </div>
                </div>
@@ -1051,7 +1051,7 @@
                   </div>
                </div>
             </div>
-            <?php echo form_close() ?>
+            </form>
          </div>
       </div>
    </div>
@@ -1111,30 +1111,57 @@
    });
    
    
-      const dt = new DataTransfer();
-      $("#attachment").on('change', function(e){
+   const dt = new DataTransfer();
+   $("#attachment").on('change', function(e){
+       for(var i = 0; i < this.files.length; i++){
+           let fileBloc = $('<span/>', {class: 'file-block'}),
+                fileName = $('<span/>', {class: 'name', text: this.files.item(i).name});
+           fileBloc.append('<span class="file-delete"><span><i class="fa fa-trash-o"></i></span></span>')
+               .append(fileName);
+           $("#filesList > #files-names").append(fileBloc);
+       };
+       for (let file of this.files) {
+           dt.items.add(file);
+       }
+       this.files = dt.files;
+   
+       $('span.file-delete').click(function(){
+           let name = $(this).next('span.name').text();
+           $(this).parent().remove();
+           for(let i = 0; i < dt.items.length; i++){
+               if(name === dt.items[i].getAsFile().name){
+                   dt.items.remove(i);
+                   continue;
+               }
+           }
+           document.getElementById('attachment').files = dt.files;
+       });
+   });
+
+   const sales = new DataTransfer();
+      $("#salesattachment").on('change', function(e){
           for(var i = 0; i < this.files.length; i++){
               let fileBloc = $('<span/>', {class: 'file-block'}),
                    fileName = $('<span/>', {class: 'name', text: this.files.item(i).name});
               fileBloc.append('<span class="file-delete"><span><i class="fa fa-trash-o"></i></span></span>')
                   .append(fileName);
-              $("#filesList > #files-names").append(fileBloc);
+              $("#salesfilesList > #salesfiles-names").append(fileBloc);
           };
           for (let file of this.files) {
-              dt.items.add(file);
+              sales.items.add(file);
           }
-          this.files = dt.files;
+          this.files = sales.files;
       
           $('span.file-delete').click(function(){
               let name = $(this).next('span.name').text();
               $(this).parent().remove();
-              for(let i = 0; i < dt.items.length; i++){
-                  if(name === dt.items[i].getAsFile().name){
-                      dt.items.remove(i);
+              for(let i = 0; i < sales.items.length; i++){
+                  if(name === sales.items[i].getAsFile().name){
+                      sales.items.remove(i);
                       continue;
                   }
               }
-              document.getElementById('attachment').files = dt.files;
+              document.getElementById('salesattachment').files = sales.files;
           });
       });
       
@@ -1254,6 +1281,15 @@
          }
       }
 
+      // sales Commision Input
+      function salesCommisionInput(input) {
+         const value = input.value;
+         const validValue = value.match(/^\d*%?$/);
+         if (!validValue) {
+            input.value = value.slice(0, -1); 
+         }
+      }
+
 // get Employee select dropdown
 $(document).ready(function(){
    $('#selectemployeeTypes').change(function() {
@@ -1358,6 +1394,98 @@ $("#employeeInsertForm").validate({
             }
         });
     }
+});
+
+
+// Sales Partner
+$(document).ready(function () {
+   $("#salespartnerInsertForm").validate({
+        rules: {
+            first_name: "required",
+            last_name: "required",
+            phone: "required",
+            federaltaxclassification: "required",
+            emp_tax_detail: "required",
+            ssn: {
+               minlength: 9,
+               digits: true
+            },
+            federalidentificationnumber: {}
+        },
+        messages: {
+            first_name: "First name is required",
+            last_name: "Last name is required",
+            phone: "Phone is required",
+            federaltaxclassification: "Federal Tax Classification is required",
+            emp_tax_detail: "Employee Tax is required",
+            ssn: {
+               required: "Social Security Number is required",
+               minlength: "Social Security Number must be at least 9 digits",
+               digits: "Social Security Number must contain only numeric characters"
+            },
+            federalidentificationnumber: {
+               required: "Federal Identification Number is required"
+            }
+        },
+        submitHandler: function (form) {
+            var formData = new FormData(form);
+            formData.append(csrfName, csrfHash);
+            $.ajax({
+                type: "POST",
+                url: "<?php echo base_url(); ?>chrm/salespartner_create",
+                data: formData,
+                dataType: "json",
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                  console.log(response, "response");
+                    if (response.status == 1) {
+                        toastr.success(response.msg, "Success", {
+                           closeButton: false,
+                           timeOut: 1000
+                        });
+                        setTimeout(function () {
+                           window.location.href = "<?= base_url('Chrm/manage_employee?id='); ?>" +
+                                "<?= $_GET['id']; ?>" +
+                                "&admin_id=" + "<?= $_GET['admin_id']; ?>";
+                        }, 1000);
+                    } else {
+                        toastr.error(response.msg, "Error", {
+                           closeButton: false,
+                           timeOut: 3000
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                  var errorMsg = xhr.responseJSON && xhr.responseJSON.msg ? xhr.responseJSON.msg : "An error occurred.";
+                  toastr.error(errorMsg, "Error", {
+                     closeButton: false,
+                     timeOut: 1000
+                  });
+               }
+            });
+        }
+    });
+
+   $('#ssnInput, #federalInput').on('keyup', function () {
+    const ssnInput = $('#ssnInput');
+    const federalInput = $('#federalInput');
+    const form = $("#salespartnerInsertForm").validate();
+
+    const ssnLength = ssnInput.val().trim().length;
+    const federalLength = federalInput.val().trim().length;
+    if ($(this).attr('id') === 'ssnInput' && ssnLength > 0) {
+        federalInput.val('');
+    } else if ($(this).attr('id') === 'federalInput' && federalLength > 0) {
+        ssnInput.val('');
+    }
+
+    form.settings.rules.federalidentificationnumber.required = ssnLength === 0;
+    form.settings.rules.ssn.required = federalLength === 0;
+    form.element('#ssnInput');
+    form.element('#federalInput');
+   });
+
 });
 
 </script>

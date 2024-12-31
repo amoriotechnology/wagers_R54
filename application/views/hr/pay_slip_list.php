@@ -19,7 +19,7 @@
    <section class="content">
       <div class="panel panel-bd lobidrag">
          <div class="panel-heading" style="height: 60px; border: 3px solid #D7D4D6;">
-            <div class="col-sm-12">
+            <div class="col-sm-12" style="position: relative; left: 280px;">
                 <div class="col-md-4 col-sm-4" style="display: flex; justify-content: center; align-items: center;">
                     <label>Employee</label>&nbsp;&nbsp;&nbsp;
                     <select id="customer-name-filter" name="employee_name" class="form-control employee_name">
@@ -36,7 +36,7 @@
                 <div class="col-md-6 col-sm-6">
                     <div class="search">
                       <span class="fa fa-search"></span>
-                      <input class="daterangepicker_field dateSearch" name="daterangepicker-field" autocomplete="off" id="daterangepicker-field" placeholder="Search...">
+                      <input class="daterangepicker_field dateSearch" name="daterangepicker-field" autocomplete="off" id="daterangepicker-field" placeholder="Search..." readonly>
                     </div>
                     <input type="button" id="searchtrans" name="btnSave" class="btn btnclr" value="Search" style="margin-bottom: 5px; margin-left: 10px;"/>
                 </div>
@@ -124,6 +124,7 @@ $(document).ready(function() {
          { "data": "tot_amt" },
          { "data": "action" },
          ],
+        "order": [[0, "desc"]],
         "columnDefs": [{
             "orderable": false,
             "targets": [0, 8],

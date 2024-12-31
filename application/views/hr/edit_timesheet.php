@@ -72,7 +72,7 @@
 
                         <div class="table-responsive work_table col-md-12">
                             <table class="table table-striped table-bordered" cellspacing="0" width="100%" id="PurList"> 
-                                <thead>
+                                <thead class="btnclr">
                                     <tr> 
                                         <?php if ($employee_name[0]['payroll_type'] == 'Hourly') { ?>
                                             <th style='height:25px;' class="col-md-2">Date</th>
