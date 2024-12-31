@@ -1086,25 +1086,18 @@ public function roadtransport_remarks(){
 
 
 
-    public function retrieve_admin_data() {
-
+    public function retrieve_admin_data($userId, $adminId) 
+    {
         $this->db->select('*');
-
-        $this->db->from('users');
-
-      //  $this->db->where('setting_id',1);
-          $this->db->where('unique_id',$_SESSION['unique_id']);
-
+        $this->db->from('user_login');
+        $this->db->where('user_id', $userId);
+        $this->db->where('unique_id', $adminId);
         $query = $this->db->get();
 
         if ($query->num_rows() > 0) {
-
             return $query->result_array();
-
         }
-
         return false;
-
     }
 
 

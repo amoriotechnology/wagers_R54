@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $type == 'emp_data' ? "Employee Timesheet Invoice" : "Timesheet Pdf"; ?></title>
+    <title><?php echo $type == 'emp_data' || $type == 'sp_data' ? "Employee Invoice" : "Timesheet Pdf"; ?></title>
     <link rel="stylesheet" href="<?= base_url('assets/css/bootstrap.min.css') ?>">
 
     <style>
@@ -126,7 +126,7 @@
                     <span style="font-weight:1;"><b>Phone :</b> <?= $com_phone; ?><br>
                     </div>
                 </div>
-                <?php if($type != 'emp_data') { ?>
+                <?php if($type != 'emp_data' && $type != 'sp_data') { ?>
                     <div class="col-sm-5" style="margin-left:550px;margin-top:-95px; font-size:12px;">
                         <b><span style="font-weight:bold;"> Name : <?= $time_data['first_name'].' '.$time_data['last_name']; ?></span><br> 
                         <span style="font-weight:1;"> Job Title :  <?= $time_data['designation']; ?><br>
@@ -141,7 +141,7 @@
 <hr style="color:white; margin-top:10px">
 
 <div class="pagebreak">
-<?php if($type == 'emp_data') { ?>
+<?php if($type == 'emp_data' || $type == 'sp_data') { ?>
     <table class="mainTable">
         <tbody class="emp_tbl">
             <tr>

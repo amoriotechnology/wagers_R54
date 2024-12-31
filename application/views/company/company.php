@@ -7,6 +7,12 @@
    background-color:<?= $setting_detail[0]['button_color']; ?>;
    color: white;
 }
+.style-column {
+   max-width: 200px;
+   word-wrap: break-word;
+   word-break: break-word;
+   white-space: normal;
+}
 </style>
 
 <div class="content-wrapper">
@@ -44,61 +50,124 @@
 
       <!-- Company List -->
       <div class="row">
-         <div class="col-sm-12">
-            <div class="panel panel-bd lobidrag">
-               <div class="panel-heading">
-                  <div class="panel-title">
-                      <a href="<?= base_url('company_setup/company_branch?id='.$_GET['id'].'&admin_id='.$_GET['admin_id']); ?>" class="btnclr btn m-b-5 m-r-2" style="color:white;" ><i class="ti-plus"> </i> <?= display('Add Company') ?>  </a>
-                  </div>
-               </div>
-               <div class="panel-body">
-                  <div class="table-responsive">
-                     <div class="sortableTable__container">
-                     <div class="sortableTable__discard">
-                     </div>
-                     <table  id="" class="table table-bordered table-striped table-hover">
-                        <thead class="sortableTable">
-                           <tr class="sortableTable__header btnclr">
-                              <th class="1 value" data-col="1"><?= display('sl') ?></th>
-                              <th class="text-center 2 value" data-col="2"><?= display('name') ?></th>
-                              <th class="text-center 3 value" data-col="3"><?= display('address') ?></th>
-                              <th class="text-center 4 value" data-col="4"><?= display('mobile') ?></th>
-                              <th class="text-center 5 value" data-col="5"><?= display('website') ?></th>
-                              <th class="text-center 6 value" data-col="6"><?= display('action') ?></th>
-                           </tr>
-                        </thead>
-                        <tbody class="sortableTable__body">
-                           
-                           <?php 
-                              if ($company_admin_info) {
-                              	$i =1;
-                              	foreach($company_admin_info as $list){
-                              		echo "<tr class='task-list-row'>
-                                       <td class='1 value' data-col='1'>".$i."</td>
-                                       <td class='2 value' data-col='2'>".$list["company_name"]."</td>
-                                       <td class='3 value' data-col='3'>".$list["address"]."</td>
-                                       <td class='4 value' data-col='4'>".$list["mobile"]."</td>
-                                       <td class='5 value' data-col='5'>".$list["website"]."</td>";
-                           ?>
-                           <td class="6 value" data-col="6">
-                              <center>
-                              <?= form_open()?>
-                                 <a href="<?= base_url().'Company_setup/company_update_form?id='.$_GET['id'].'&admin_id='.$_GET['admin_id'].'&company_id='.$list['company_id']; ?>" class="btnclr btn m-b-5 m-r-2" data-toggle="tooltip" data-placement="left" title="" data-original-title="<?= display('update') ?>"><i class="fa fa-pencil" aria-hidden="true"></i></a>
-                              <?= form_close()?>
-                              </center>
-                           </td>
-                           </tr>
-
-                           <!-- {/company_list} -->
-                           <?php $i++;	} } ?>
-                        </tbody>
-                     </table>
+            <div class="col-sm-12">
+                <div class="panel panel-bd lobidrag">
+                  <div class="panel-heading">
+                     <div class="panel-title">
+                        <a href="<?= base_url('company_setup/company_branch?id='.$_GET['id'].'&admin_id='.$_GET['admin_id']); ?>" class="btnclr btn m-b-5 m-r-2" style="color:white;" ><i class="ti-plus"> </i> <?= display('Add Company') ?>  </a>
                      </div>
                   </div>
-               </div>
+                    <div class="panel-body">
+                        <div id="dataTableExample3">
+                            <table class="table table-bordered" cellspacing="0" width="100%" id="company_list">
+                                <thead>
+                                    <tr style="background-color: #424f5c;color:#fff;">
+                                       <th>S.No</th>
+                                       <th>User Name</th>
+                                       <th>Company Name</th>
+                                       <th>Address</th>
+                                       <th>Mobile</th>
+                                       <th>Website</th>
+                                       <th>Action</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
-         </div>
-      </div>
+        </div>
    </section>
 </div>
 <!-- Company List End -->
+
+<script type="text/javascript">
+$(document).ready(function() {
+   if ($.fn.DataTable.isDataTable('#company_list')) {
+      $('#company_list').DataTable().clear().destroy();
+   }
+   var csrfName = '<?= $this->security->get_csrf_token_name(); ?>';
+   var csrfHash = '<?= $this->security->get_csrf_hash(); ?>';
+   $('#company_list').DataTable({
+      "processing": true,
+      "serverSide": true,
+      "lengthMenu":[[10,25,50,100],[10,25,50,100]],
+      "ajax": {
+           "url": "<?= base_url('Company_setup/companyLists?id='); ?>" +encodeURIComponent('<?= $_GET['id']; ?>')+'&admin_id='+'<?= $_GET['admin_id'] ?>',
+         "type": "POST",
+         "data": function(d) {
+            d['<?= $this->security->get_csrf_token_name(); ?>'] = '<?= $this->security->get_csrf_hash(); ?>';
+         },
+         "dataSrc": function(json) {
+             csrfHash = json['<?= $this->security->get_csrf_token_name(); ?>'];
+            return json.data;
+         }
+      },
+      "columns": [
+           { "data": "company_id" },
+           { "data": "username", "className": "style-column" },
+           { "data": "company_name", "className": "style-column" },
+           { "data": "address" , "className": "style-column"},
+           { "data": "mobile" },
+           { "data": "website", "className": "style-column" },
+           { "data": "action" },
+      ],
+      "order": [[0, "desc"]],
+      "columnDefs": [
+          { "orderable": false, "targets": [0, 6] }
+      ],
+      "pageLength": 10,
+      "colReorder": true,
+      "stateSave": true,
+      "stateSaveCallback": function(settings, data) {
+          localStorage.setItem('company', JSON.stringify(data));
+      },
+      "stateLoadCallback": function(settings) {
+          var savedState = localStorage.getItem('company');
+          return savedState ? JSON.parse(savedState) : null;
+      },
+        "dom": "<'row'<'col-sm-4'l><'col-sm-4 text-center'B><'col-sm-4'f>>" + "<'row'<'col-sm-12'tr>>" + "<'row'<'col-sm-6'i><'col-sm-6'p>>",
+         "buttons": [
+         {
+            "extend": "copy",
+            "className": "btn-sm",
+            "exportOptions": { "columns": ':not(:last-child)' }
+         },
+         {
+            "extend": "csv",
+            "title": "Manage Company",
+            "className": "btn-sm",
+            "exportOptions": { "columns": ':not(:last-child)' }
+         },
+         {
+            "extend": "pdf",
+            "title": "Manage Company",
+            "className": "btn-sm",
+            "exportOptions": { "columns": ':not(:last-child)' }
+         },
+         {
+             "extend": "print",
+             "title": "Manage Company",
+             "className": "btn-sm",
+             "exportOptions": { "columns": ':not(:last-child)' },
+             "customize": function(win) {
+                 $(win.document.body).css('font-size', '14px') .css('text-align', 'center') .css('margin', '0') .css('padding', '0'); 
+                 $(win.document.body).find('table').addClass('compact').css('font-size', 'inherit'); 
+
+                 $(win.document.body).find('h1').css('font-size', '16px') .css('text-align', 'center').css('margin', '0 0 10px 0'); 
+
+                 var rows = $(win.document.body).find('table tbody tr');
+                 rows.each(function() {
+                     if ($(this).find('td').length === 0) {
+                         $(this).remove();
+                     }
+                 });
+
+                 $(win.document.body).find('div:last-child').css('page-break-after', 'auto');
+             }
+         },
+         { "extend": "colvis", "className": "btn-sm" }
+      ]
+   });
+});
+</script>

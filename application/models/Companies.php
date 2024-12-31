@@ -33,7 +33,6 @@ class Companies extends CI_Model {
 		$this->db->where('company_id', $company_id);
         $this->db->where('create_by', $this->session->userdata('user_id'));
         $query = $this->db->get();
-				// echo $this->db->last_query(); die();
 		
 		if ($query->num_rows() > 0) {
             return $query->result();
@@ -80,17 +79,6 @@ public function editurldata($company_id)
         }
         return false;
     }
-// 	public function attachData($id = null){
-//         $this->db->select('a.*,b.*,c.*');
-//         $this->db->from('company_information a');
-//         $this->db->join('bill_history b', 'a.company_id=b.company_id');
-//         $this->db->join('currency_tbl c', 'a.currency=c.currency_name');
-//         $this->db->where('a.company_id', $id);
-//         $query = $this->db->get();
-//         if ($query->num_rows() > 0) {
-//             return $query->result_array();
-//         }
-//     }
 	
 	
 	#============Count Company=============#
@@ -165,16 +153,15 @@ public function editurldata($company_id)
         return false;
     }
 
-public function company_info()
+    public function company_info($user_id)
 	{
 		$this->db->select('*');
 		$this->db->from('company_information');
-		$this->db->where('company_id', $this->session->userdata('user_id'));
+		$this->db->where('create_by', $user_id);
 		$query = $this->db->get();
 		if ($query->num_rows() > 0) {
 			return $query->result_array();	
 		}
-		//echo $this->db->last_query();die();
 		return false;
 	}
 
@@ -455,7 +442,7 @@ public function company_info()
 		}
 		return false;
 	}
-//To get certain supplier's chalan info by which this company got products day by day
+    //To get certain supplier's chalan info by which this company got products day by day
 	public function supplier_chalan_details($supplier_id)
 	{ 
 		$this->db->select('*');
@@ -467,6 +454,55 @@ public function company_info()
 			return $query->result_array();	
 		}
 		return false;
+	}
+
+	// Get Company List Data
+    public function getPaginatedCompany($limit, $offset, $orderField, $orderDirection, $search, $user_id)
+    {   
+    	$this->db->distinct();
+        $this->db->select('ci.*,ul.user_id, ul.unique_id, ul.username');
+        $this->db->from('company_information ci');
+        $this->db->join('user_login ul', 'ul.user_id = ci.company_id');
+        if (!empty($search)) {
+            $this->db->group_start();
+            $this->db->like("ci.company_name", $search);
+            $this->db->or_like("ci.address", $search);
+            $this->db->or_like("ci.mobile", $search);
+            $this->db->or_like("ci.website", $search);
+            $this->db->group_end();
+        }
+        $this->db->where('ci.create_by', $user_id);
+        $this->db->limit($limit, $offset);
+        $this->db->order_by('ci.company_id', $orderDirection);
+        $query = $this->db->get();
+        if ($query === false) {
+            return [];
+        }
+        return $query->result_array();
+    }
+
+    // Get Total Employee List Data
+    public function getTotalCompanyListdata($limit, $offset, $search, $user_id, $orderDirection)
+	{   
+		$this->db->distinct();
+	    $this->db->select('ci.*,ul.user_id, ul.unique_id');
+        $this->db->from('company_information ci');
+        $this->db->join('user_login ul', 'ul.user_id = ci.company_id');
+	    
+	    if (!empty($search)) {
+	        $this->db->group_start(); 
+	        $this->db->like("ci.company_name", $search);
+            $this->db->or_like("ci.address", $search);
+            $this->db->or_like("ci.mobile", $search);
+            $this->db->or_like("ci.website", $search);
+	        $this->db->group_end(); 
+	    }
+
+	    $this->db->where('ci.create_by', $user_id);
+	    $this->db->order_by('ci.company_id', $orderDirection);
+	    $count = $this->db->count_all_results();
+
+	    return $count; 
 	}
 
 }

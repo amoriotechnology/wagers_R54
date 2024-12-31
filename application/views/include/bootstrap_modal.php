@@ -617,40 +617,9 @@ if(in_array(BOOTSTRAP_MODALS['new_emp_form'], $bootstrap_modals)) { ?>
    <!-- /.modal-dialog -->
 </div>
 <!-- /.modal -->
-<?php } if(in_array(BOOTSTRAP_MODALS['city_tax_modal'], $bootstrap_modals)) { ?>
-    <!------ add new city tax -->
-<div class="modal fade" id="city_tax" role="dialog">
-   <div class="modal-dialog" role="document">
-      <div class="modal-content">
-         <div class="modal-header btnclr"  style="text-align:center;" >
-            <a href="#" class="close" data-dismiss="modal">&times;</a>
-            <h4 class="modal-title"><?php echo 'Add New City ' ?></h4>
-         </div>
-         <div class="modal-body">
-            <div id="customeMessage" class="alert hide"></div>
-            <form id="add_city_tax" method="post">
-               <div class="panel-body">
-                  <input type ="hidden" name="csrf_test_name" id="" value="<?php echo $this->security->get_csrf_hash();?>">
-                  <div class="form-group row">
-                     <label for="customer_name" class="col-sm-3 col-form-label" style="width: auto;"><?php echo 'New City ' ?> <i class="text-danger">*</i></label>
-                     <div class="col-sm-6">
-                        <input class="form-control" name ="new_city_tax" id="new_city_tax" type="text" placeholder="New City "  required="" tabindex="1">
-                     </div>
-                  </div>
-               </div>
-         </div>
-         <div class="modal-footer">
-         <a href="#" class="btn btnclr"  data-dismiss="modal"><?php echo display('Close') ?> </a>
-         <input type="submit" class="btn btnclr "  value=<?php echo display('Submit') ?>>
-         </div>
-         </form>
-      </div>
-      <!-- /.modal-content -->
-   </div>
-   <!-- /.modal-dialog -->
-</div>
-<!-- /.modal -->
-<?php } if(in_array(BOOTSTRAP_MODALS['payroll_type_modal'], $bootstrap_modals)) { ?>
+<?php } ?>
+
+<?php if(in_array(BOOTSTRAP_MODALS['payroll_type_modal'], $bootstrap_modals)) { ?>
     <!------ add new payroll Type -->
 <div class="modal fade" id="proll_type" role="dialog">
    <div class="modal-dialog" role="document">
@@ -721,7 +690,7 @@ if(in_array(BOOTSTRAP_MODALS['new_emp_form'], $bootstrap_modals)) { ?>
 <div class="modal fade" id="payment_type" role="dialog">
    <div class="modal-dialog" role="document">
       <div class="modal-content">
-         <div class="modal-header btnclr"  style="text-align:center;" >
+         <div class="modal-header btnclr"  style="text-align:center;">
             <a href="#" class="close" data-dismiss="modal">&times;</a>
             <h4 class="modal-title"><?php echo display('Add New Payment Type') ?></h4>
          </div>
@@ -759,11 +728,10 @@ if(in_array(BOOTSTRAP_MODALS['add_states'],$bootstrap_modals)){ ?>
      <div class="modal-content" style="text-align:center;">
          <div class="modal-header btnclr" >
             <a href="#" class="close" data-dismiss="modal">&times;</a>
-            <h3 class="modal-title">Add New States</h3>
+            <h3 class="modal-title">Add New State</h3>
          </div>
          <div class="modal-body">
-            <div id="customeMessage" class="alert hide"></div>
-            <?php echo form_open('Chrm/add_state', array('class' => 'form-vertical', 'id' => 'newcustomer')) ?>
+            <form method="post" id="addState" style="text-align: left !important;">
             <div class="panel-body">
                <input type="hidden" name="<?php echo $this->security->get_csrf_token_name();?>" value="<?php echo $this->security->get_csrf_hash();?>">
                <input type ="hidden"  id="admin_company_id" value="<?php echo $_GET['id'];  ?>" name="admin_company_id" />
@@ -772,8 +740,6 @@ if(in_array(BOOTSTRAP_MODALS['add_states'],$bootstrap_modals)){ ?>
                   <label for="customer_name" class="col-sm-3 col-form-label">State Name<i class="text-danger">*</i></label>
                   <div class="col-sm-6">
                      <input class="form-control" name ="state_name" id="" type="text" placeholder="State Name"  required="" tabindex="1">
-                     <input type ="hidden"  id="admin_company_id" value="<?php echo $_GET['id'];  ?>" name="admin_company_id" />
-                     <input type ="hidden" id="adminId" value="<?php echo $_GET['admin_id'];  ?>" name="adminId" />
                   </div>
                </div>
             </div>
@@ -782,7 +748,7 @@ if(in_array(BOOTSTRAP_MODALS['add_states'],$bootstrap_modals)){ ?>
             <a href="#" class="btnclr btn btn-danger" data-dismiss="modal">Close</a>
             <input type="submit" class="btnclr btn btn-success"  value="Submit">
          </div>
-         <?php echo form_close() ?>
+        </form>
       </div>
    </div>
 </div>
@@ -794,11 +760,11 @@ if(in_array(BOOTSTRAP_MODALS['add_states'],$bootstrap_modals)){ ?>
       <div class="modal-content" style="text-align:center;">
          <div class="modal-header btnclr" >
             <a href="#" class="close" data-dismiss="modal">&times;</a>
-            <h3 class="modal-title">Add New States Tax</h3>
+            <h3 class="modal-title">Add New State Tax</h3>
          </div>
          <div class="modal-body">
             <div id="customeMessage" class="alert hide"></div>
-            <?php echo form_open('Chrm/add_state_tax', array('class' => 'form-vertical', 'id' => 'add_state_tax')) ?>
+            <form method="post" id="addstatetax" style="text-align: left !important;">
             <div class="panel-body">
                <input type="hidden" name="<?php echo $this->security->get_csrf_token_name();?>" value="<?php echo $this->security->get_csrf_hash();?>">
                <div class="form-group row">
@@ -826,7 +792,7 @@ if(in_array(BOOTSTRAP_MODALS['add_states'],$bootstrap_modals)){ ?>
             <a href="#" class="btnclr btn btn-danger" data-dismiss="modal">Close</a>
             <input type="submit" class="btnclr btn btn-success"   value="Submit">
          </div>
-         <?php echo form_close() ?>
+         </form>
       </div>
    </div>
 </div>
@@ -841,7 +807,7 @@ if(in_array(BOOTSTRAP_MODALS['add_states'],$bootstrap_modals)){ ?>
          </div>
          <div class="modal-body">
             <div id="customeMessage" class="alert hide"></div>
-            <?php echo form_open('Chrm/add_city', array('class' => 'form-vertical', 'id' => 'newcustomer')) ?>
+            <form method="post" id="cityTax" style="text-align: left !important;"> 
             <div class="panel-body">
                <input type="hidden" name="<?php echo $this->security->get_csrf_token_name();?>" value="<?php echo $this->security->get_csrf_hash();?>">
                <input type ="hidden"  id="admin_company_id" value="<?php echo $_GET['id'];  ?>" name="admin_company_id" />
@@ -858,7 +824,7 @@ if(in_array(BOOTSTRAP_MODALS['add_states'],$bootstrap_modals)){ ?>
             <a href="#" class="btnclr btn btn-danger" data-dismiss="modal">Close</a>
             <input type="submit" class="btnclr btn btn-success"  value="Submit">
          </div>
-         <?php echo form_close() ?>
+         </form>
       </div>
    </div>
 </div>
@@ -867,13 +833,12 @@ if(in_array(BOOTSTRAP_MODALS['add_states'],$bootstrap_modals)){ ?>
 <div class="modal fade modal-success" id="add_city_tax" role="dialog">
    <div class="modal-dialog" role="document">
       <div class="modal-content" style="text-align:center;">
-         <div class="modal-header btnclr" >
+         <div class="modal-header btnclr">
             <a href="#" class="close" data-dismiss="modal">&times;</a>
             <h3 class="modal-title">Add New City Tax</h3>
          </div>
          <div class="modal-body">
-            <div id="customeMessage" class="alert hide"></div>
-            <?php echo form_open('Chrm/add_city_state_tax', array('class' => 'form-vertical', 'id' => 'add_city_state_tax')) ?>
+            <form id="addCityTax" method="post" style="text-align: left !important;">
             <div class="panel-body">
                <input type="hidden" name="<?php echo $this->security->get_csrf_token_name();?>" value="<?php echo $this->security->get_csrf_hash();?>">
                <div class="form-group row">
@@ -901,7 +866,7 @@ if(in_array(BOOTSTRAP_MODALS['add_states'],$bootstrap_modals)){ ?>
             <a href="#" class="btnclr btn btn-danger" data-dismiss="modal">Close</a>
             <input type="submit" class="btnclr btn btn-success"   value="Submit">
          </div>
-         <?php echo form_close() ?>
+         </form>
       </div>
    </div>
 </div>
@@ -915,8 +880,7 @@ if(in_array(BOOTSTRAP_MODALS['add_states'],$bootstrap_modals)){ ?>
             <h3 class="modal-title">Add New County</h3>
          </div>   
          <div class="modal-body">
-            <div id="customeMessage" class="alert hide"></div>
-            <?php echo form_open('Chrm/add_county', array('class' => 'form-vertical', 'id' => 'newcustomer')) ?>
+            <form id="addCounty" method="post" style="text-align: left !important;">
             <div class="panel-body">
                <input type="hidden" name="<?php echo $this->security->get_csrf_token_name();?>" value="<?php echo $this->security->get_csrf_hash();?>">
                <div class="form-group row">
@@ -933,7 +897,7 @@ if(in_array(BOOTSTRAP_MODALS['add_states'],$bootstrap_modals)){ ?>
             <a href="#" class="btnclr btn btn-danger" data-dismiss="modal">Close</a>
             <input type="submit" class="btnclr btn btn-success"  value="Submit">
          </div>
-         <?php echo form_close() ?>
+         </form>
       </div>
    </div>
 </div>
@@ -947,8 +911,7 @@ if(in_array(BOOTSTRAP_MODALS['add_states'],$bootstrap_modals)){ ?>
             <h3 class="modal-title">Add New County Tax</h3>
          </div>
          <div class="modal-body">
-            <div id="customeMessage" class="alert hide"></div>
-            <?php echo form_open('Chrm/add_county_tax', array('class' => 'form-vertical', 'id' => 'add_county_tax')) ?>
+            <form id="addCountyTax" method="post" style="text-align: left !important;">
             <div class="panel-body">
                <input type="hidden" name="<?php echo $this->security->get_csrf_token_name();?>" value="<?php echo $this->security->get_csrf_hash();?>">
                <div class="form-group row">
@@ -976,7 +939,7 @@ if(in_array(BOOTSTRAP_MODALS['add_states'],$bootstrap_modals)){ ?>
             <a href="#" class="btnclr btn btn-danger" data-dismiss="modal">Close</a>
             <input type="submit" class="btnclr btn btn-success"   value="Submit">
          </div>
-         <?php echo form_close() ?>
+         </form>
       </div>
    </div>
 </div>
@@ -1009,44 +972,9 @@ if(in_array(BOOTSTRAP_MODALS['add_states'],$bootstrap_modals)){ ?>
 </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
-<?php  } if(in_array(BOOTSTRAP_MODALS['add_states'],$bootstrap_modals)){   ?>
+<?php } ?>
 
-<!-- Add States -->
-<div class="modal fade modal-success" id="add_states" role="dialog">
-   <div class="modal-dialog" role="document">
-     <div class="modal-content" style="text-align:center;">
-         <div class="modal-header btnclr" >
-            <a href="#" class="close" data-dismiss="modal">&times;</a>
-            <h3 class="modal-title">Add New States</h3>
-         </div>
-         <div class="modal-body">
-            <div id="customeMessage" class="alert hide"></div>
-            <?php echo form_open('Chrm/add_state', array('class' => 'form-vertical', 'id' => 'newcustomer')) ?>
-            <div class="panel-body">
-               <input type="hidden" name="<?php echo $this->security->get_csrf_token_name();?>" value="<?php echo $this->security->get_csrf_hash();?>">
-               <input type ="hidden"  id="admin_company_id" value="<?php echo $_GET['id'];  ?>" name="admin_company_id" />
-               <input type ="hidden" id="adminId" value="<?php echo $_GET['admin_id'];  ?>" name="adminId" />
-               <div class="form-group row">
-                  <label for="customer_name" class="col-sm-3 col-form-label">State Name<i class="text-danger">*</i></label>
-                  <div class="col-sm-6">
-                     <input class="form-control" name ="state_name" id="" type="text" placeholder="State Name"  required="" tabindex="1">
-
-                     <input type ="hidden"  id="admin_company_id" value="<?php echo $_GET['id'];  ?>" name="admin_company_id" />
-                     <input type ="hidden" id="adminId" value="<?php echo $_GET['admin_id'];  ?>" name="adminId" />
-
-                  </div>
-               </div>
-            </div>
-         </div>
-         <div class="modal-footer">
-            <a href="#" class="btnclr btn btn-danger" data-dismiss="modal">Close</a>
-            <input type="submit" class="btnclr btn btn-success"  value="Submit">
-         </div>
-         <?php echo form_close() ?>
-      </div>
-   </div>
-</div>
-<?php } if(in_array(BOOTSTRAP_MODALS['generatedownload'],$bootstrap_modals)){ ?>
+<?php if(in_array(BOOTSTRAP_MODALS['generatedownload'],$bootstrap_modals)){ ?>
 <!-- All Form Download Modal -->
 <div class="modal fade modal-success" id="generatedownload" role="dialog" style="margin-top: 300px;">
    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
@@ -1163,39 +1091,7 @@ if(in_array(BOOTSTRAP_MODALS['add_states'],$bootstrap_modals)){ ?>
 <script>
 
 var csrfName = '<?php echo $this->security->get_csrf_token_name();?>';
-   var csrfHash = '<?php echo $this->security->get_csrf_hash();?>';
-
-   $(document).ready(function () {
-        $('#add_city_tax').submit(function (e) {
-            e.preventDefault();
-            var formData = $("#add_city_tax").serialize();
-            formData += "&" + $.param({ csrf_test_name: csrfHash });
-            $.ajax({
-                type: 'POST',
-                data: formData,
-                dataType: "json",
-                url: '<?php echo base_url(); ?>Cinvoice/add_city_tax',
-                success: function (data1, statut) {
-                    var $datalist = $('#magic_city_tax');
-                    $datalist.empty();
-                    for (var i = 0; i < data1.length; i++) {
-                        var option = $('<option/>').attr('value', data1[i].city_tax).text(data1[i].city_tax);
-                        $datalist.append(option);
-                    }
-                    $('#new_city_tax').val('');
-                    $("#bodyModal1").html("City Tax Added Successfully");
-                    $('#city_tax').modal('hide');
-                    $('#citytx').show();
-                    $('#myModal1').modal('show');
-                    window.setTimeout(function () {
-                        $('#city_tax').modal('hide');
-                        $('#myModal1').modal('hide');
-                    }, 2000);
-                }
-            });
-        });
-    });
-
+var csrfHash = '<?php echo $this->security->get_csrf_hash();?>';
    // Payroll Insert Data
      $('#add_payroll_type').submit(function(e){
        e.preventDefault();
@@ -1566,6 +1462,362 @@ $("#insert_daily_break").validate({
                    timeOut: 1000
                 });
                 $('#dailybreak_add').modal('hide');
+            },
+            error: function (error) {
+                toastr.error(error, "Error", { 
+                   closeButton: false,
+                   timeOut: 1000
+                });
+            }
+        });
+    }
+});
+
+
+// Add State
+$("#addState").validate({
+    rules: {
+        state_name: "required",
+    },
+    messages: {
+        state_name: "State Name is required",
+    },
+    errorPlacement: function(error, element) {
+        if (element.hasClass("select2-hidden-accessible")) {
+            error.insertAfter(element.next('span.select2')); 
+        } else {
+            error.insertAfter(element);
+        }
+    },
+    submitHandler: function(form, event) {
+        event.preventDefault();
+        var csrfName = '<?php echo $this->security->get_csrf_token_name();?>';
+        var csrfHash = '<?php echo $this->security->get_csrf_hash();?>';
+
+        var formData = new FormData(form); 
+        formData.append(csrfName, csrfHash); 
+
+        $.ajax({
+            type: "POST",
+            url: "<?php echo base_url(); ?>Chrm/add_state", 
+            data: formData, 
+            dataType: "json",
+            contentType: false, 
+            processData: false,
+            success: function(response) {
+                console.log(response);
+                if(response.status == 1){
+                    toastr.success(response.message, "Success", { 
+                        closeButton: false,
+                        timeOut: 1000
+                    });
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+                    $('#add_states').modal('hide');
+                }else{
+                    toastr.error(response.message, "Error", { 
+                       closeButton: false,
+                       timeOut: 1000
+                    });
+                }
+            },
+            error: function (error) {
+                toastr.error(error, "Error", { 
+                   closeButton: false,
+                   timeOut: 1000
+                });
+            }
+        });
+    }
+});
+
+// Add StateTax
+
+$("#addstatetax").validate({
+    rules: {
+        selected_state: "required",
+        state_tax_name: "required"
+    },
+    messages: {
+        selected_state: "State Name is required",
+        state_tax_name: "Tax Name is required",
+    },
+    errorPlacement: function(error, element) {
+        if (element.hasClass("select2-hidden-accessible")) {
+            error.insertAfter(element.next('span.select2')); 
+        } else {
+            error.insertAfter(element);
+        }
+    },
+    submitHandler: function(form, event) {
+        event.preventDefault();
+        var csrfName = '<?php echo $this->security->get_csrf_token_name();?>';
+        var csrfHash = '<?php echo $this->security->get_csrf_hash();?>';
+
+        var formData = new FormData(form); 
+        formData.append(csrfName, csrfHash); 
+
+        $.ajax({
+            type: "POST",
+            url: "<?php echo base_url(); ?>Chrm/add_state_tax", 
+            data: formData, 
+            dataType: "json",
+            contentType: false, 
+            processData: false,
+            success: function(response) {
+                console.log(response);
+                if(response.status == 1){
+                    toastr.success(response.message, "Success", { 
+                        closeButton: false,
+                        timeOut: 1000
+                    });
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+                    $('#add_state_tax').modal('hide');
+                }else{
+                    toastr.error(response.message, "Error", { 
+                       closeButton: false,
+                       timeOut: 1000
+                    });
+                }
+            },
+            error: function (error) {
+                toastr.error(error, "Error", { 
+                   closeButton: false,
+                   timeOut: 1000
+                });
+            }
+        });
+    }
+});
+
+// Add City
+$("#cityTax").validate({
+    rules: {
+        city_name: "required",
+    },
+    messages: {
+        city_name: "City Name is required",
+    },
+    errorPlacement: function(error, element) {
+        if (element.hasClass("select2-hidden-accessible")) {
+            error.insertAfter(element.next('span.select2')); 
+        } else {
+            error.insertAfter(element);
+        }
+    },
+    submitHandler: function(form, event) {
+        event.preventDefault();
+        var csrfName = '<?php echo $this->security->get_csrf_token_name();?>';
+        var csrfHash = '<?php echo $this->security->get_csrf_hash();?>';
+
+        var formData = new FormData(form); 
+        formData.append(csrfName, csrfHash); 
+
+        $.ajax({
+            type: "POST",
+            url: "<?php echo base_url(); ?>Chrm/add_city", 
+            data: formData, 
+            dataType: "json",
+            contentType: false, 
+            processData: false,
+            success: function(response) {
+                console.log(response);
+                if(response.status == 1){
+                    toastr.success(response.message, "Success", { 
+                        closeButton: false,
+                        timeOut: 1000
+                    });
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+                    $('#add_city_info').modal('hide');
+                }else{
+                    toastr.error(response.message, "Error", { 
+                       closeButton: false,
+                       timeOut: 1000
+                    });
+                }
+            },
+            error: function (error) {
+                toastr.error(error, "Error", { 
+                   closeButton: false,
+                   timeOut: 1000
+                });
+            }
+        });
+    }
+});
+
+// Add City Tax
+$("#addCityTax").validate({
+    rules: {
+        selected_city: "required",
+        city_tax_name: "required"
+    },
+    messages: {
+        selected_city: "City Name is required",
+        city_tax_name: "City Tax name is required",
+    },
+    errorPlacement: function(error, element) {
+        if (element.hasClass("select2-hidden-accessible")) {
+            error.insertAfter(element.next('span.select2')); 
+        } else {
+            error.insertAfter(element);
+        }
+    },
+    submitHandler: function(form, event) {
+        event.preventDefault();
+        var csrfName = '<?php echo $this->security->get_csrf_token_name();?>';
+        var csrfHash = '<?php echo $this->security->get_csrf_hash();?>';
+
+        var formData = new FormData(form); 
+        formData.append(csrfName, csrfHash); 
+
+        $.ajax({
+            type: "POST",
+            url: "<?php echo base_url(); ?>Chrm/add_city_state_tax", 
+            data: formData, 
+            dataType: "json",
+            contentType: false, 
+            processData: false,
+            success: function(response) {
+                console.log(response);
+                if(response.status == 1){
+                    toastr.success(response.message, "Success", { 
+                        closeButton: false,
+                        timeOut: 1000
+                    });
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+                    $('#add_city_tax').modal('hide');
+                }else{
+                    toastr.error(response.message, "Error", { 
+                       closeButton: false,
+                       timeOut: 1000
+                    });
+                }
+            },
+            error: function (error) {
+                toastr.error(error, "Error", { 
+                   closeButton: false,
+                   timeOut: 1000
+                });
+            }
+        });
+    }
+});
+
+// Add County
+$("#addCounty").validate({
+    rules: {
+        county: "required"
+    },
+    messages: {
+        county: "County name is required",
+    },
+    errorPlacement: function(error, element) {
+        if (element.hasClass("select2-hidden-accessible")) {
+            error.insertAfter(element.next('span.select2')); 
+        } else {
+            error.insertAfter(element);
+        }
+    },
+    submitHandler: function(form, event) {
+        event.preventDefault();
+        var csrfName = '<?php echo $this->security->get_csrf_token_name();?>';
+        var csrfHash = '<?php echo $this->security->get_csrf_hash();?>';
+
+        var formData = new FormData(form); 
+        formData.append(csrfName, csrfHash); 
+
+        $.ajax({
+            type: "POST",
+            url: "<?php echo base_url(); ?>Chrm/add_county", 
+            data: formData, 
+            dataType: "json",
+            contentType: false, 
+            processData: false,
+            success: function(response) {
+                console.log(response);
+                if(response.status == 1){
+                    toastr.success(response.message, "Success", { 
+                        closeButton: false,
+                        timeOut: 1000
+                    });
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+                    $('#add_county_info').modal('hide');
+                }else{
+                    toastr.error(response.message, "Error", { 
+                       closeButton: false,
+                       timeOut: 1000
+                    });
+                }
+            },
+            error: function (error) {
+                toastr.error(error, "Error", { 
+                   closeButton: false,
+                   timeOut: 1000
+                });
+            }
+        });
+    }
+});
+
+// Add County Tax
+$("#addCountyTax").validate({
+    rules: {
+        selected_county: "required",
+        county_tax_name: "required"
+    },
+    messages: {
+        selected_county: "County Name is required",
+        county_tax_name: "County Tax name is required",
+    },
+    errorPlacement: function(error, element) {
+        if (element.hasClass("select2-hidden-accessible")) {
+            error.insertAfter(element.next('span.select2')); 
+        } else {
+            error.insertAfter(element);
+        }
+    },
+    submitHandler: function(form, event) {
+        event.preventDefault();
+        var csrfName = '<?php echo $this->security->get_csrf_token_name();?>';
+        var csrfHash = '<?php echo $this->security->get_csrf_hash();?>';
+
+        var formData = new FormData(form); 
+        formData.append(csrfName, csrfHash); 
+
+        $.ajax({
+            type: "POST",
+            url: "<?php echo base_url(); ?>Chrm/add_county_tax", 
+            data: formData, 
+            dataType: "json",
+            contentType: false, 
+            processData: false,
+            success: function(response) {
+                console.log(response);
+                if(response.status == 1){
+                    toastr.success(response.message, "Success", { 
+                        closeButton: false,
+                        timeOut: 1000
+                    });
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+                    $('#add_city_tax').modal('hide');
+                }else{
+                    toastr.error(response.message, "Error", { 
+                       closeButton: false,
+                       timeOut: 1000
+                    });
+                }
             },
             error: function (error) {
                 toastr.error(error, "Error", { 

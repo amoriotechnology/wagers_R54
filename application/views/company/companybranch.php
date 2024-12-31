@@ -1,8 +1,3 @@
-
-
-
-<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
-
 <style>
     .btnclr{
         background-color:<?= $setting_detail[0]['button_color']; ?>;
@@ -12,8 +7,18 @@
     .select2{
         display:none;
     }
-</style>
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
 
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+</style>
+<link rel="stylesheet" type="text/css" href="<?php echo base_url('assets/css/toastr.min.css')?>" />
+<script src="<?php echo base_url('assets/js/toastr.min.js')?>" ></script>
 
 <!-- Add User start -->
 <div class="content-wrapper">
@@ -33,37 +38,18 @@
     </section>
 
     <section class="content">
-        <!-- Alert Message -->
-        <?php
-            $message = $this->session->userdata('message');
-            if (isset($message)) {
-        ?>
-        <div class="alert alert-info alert-dismissable">
-            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-            <?= $message ?>                    
-        </div>
-        <?php $this->session->unset_userdata('message'); }
-            $error_message = $this->session->userdata('error_message');
-            if (isset($error_message)) {
-        ?>
-        <div class="alert alert-danger alert-dismissable">
-            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-            <?= $error_message ?>                    
-        </div>
-        <?php  $this->session->unset_userdata('error_message'); } ?>
-
-
         <!-- New user -->
         <div class="row">
             <div class="col-sm-12">
                 <div class="panel panel-bd lobidrag">
               
                     <div class="form-group row">
-                        <a href="<?= base_url('Company_setup/manage_company'); ?>" class="btnclr btn text-white float-right"> <i class="ti-align-justify"></i> Manage Company</a>
+                        <a href="<?php echo base_url('Company_setup/manage_company?id='.$_GET['id'].'&admin_id='.$_GET['admin_id']); ?>" class="btnclr btn text-white float-right" style="position: relative; right: 2%; top: 15px;"> <i class="ti-align-justify"></i> Manage Company</a>
                     </div>
                     
                     <div class="panel-body">
-                   <?= form_open_multipart('User/company_insert_branch');?>
+                    <form id="insertCompany" method="post" enctype="multipart/form-data">
+                   <!-- <?= form_open_multipart('User/company_insert_branch');?> -->
                         <div class="form-group row">
                             <div class="col-sm-4">
                                 <label class="col-form-label"><?= display('Company Name') ?><i class="text-danger">*</i></label>
@@ -94,7 +80,7 @@
                                                   
                             <div class="col-sm-4">
                                 <label class="col-form-label"><?= display('Address') ?><i class="text-danger">*</i></label>
-                                <input type="text" tabindex="1" class="form-control" name="address" id="address" required placeholder="Enter your address" />
+                                <textarea class="form-control" name="address" id="address" required placeholder="Enter your address"></textarea>
                             </div>
                         </div>
 
@@ -123,7 +109,7 @@
                           
                             <div class="col-sm-4">
                                 <label class=" col-form-label"><?= 'Bank Address' ?><i class="text-danger"></i></label>
-                                <input type="text" tabindex="1" class="form-control" name="Bank_Address" id="Bank_Address"  placeholder="Enter your Bank Address" />
+                                <textarea class="form-control" name="Bank_Address" id="Bank_Address" required placeholder="Enter your address"></textarea>
                             </div>
                         
                             <div class="col-sm-4">
@@ -179,9 +165,7 @@
                                             <?php  } ?>
                                         </datalist>
                                     </div>
-                                    <div class="col-md-4">
-                                        <a class="btnclr client-add-btn btn" aria-hidden="true" data-toggle="modal" data-target="#state_tax_id" ><i class="fa fa-plus"></i></a>
-                                    </div>
+                                   
                                 </div>
                             </div>
                         </div>
@@ -231,9 +215,7 @@
                                         <?php  } ?>
                                         </datalist>
                                     </div>
-                                    <div class="col-md-4">
-                                        <a class="btnclr client-add-btn btn" aria-hidden="true" data-toggle="modal" data-target="#local_tax_id" ><i class="fa fa-plus"></i></a>
-                                    </div>
+                                    
                                 </div>
                             </div>
                         </div>
@@ -307,21 +289,20 @@
                         </div>
                         <div id="outputsstx"></div>
 
-
-                        <div class="form-group row">
-                            <label for="example-text-input" class="col-sm-4 col-form-label"></label>
-                            <div class="col-sm-4">
+                        <div class="form-group row mt-4">
+                            <div class="col-sm-12" style="display: flex; justify-content: center;">
                                 <input type="hidden" name="<?= $this->security->get_csrf_token_name();?>" value="<?= $this->security->get_csrf_hash();?>">
-                                    <input type="hidden" name="uid" value="<?= $_SESSION['user_id']; ?>">
+                                    <input type="hidden" name="uid" value="<?= $this->session->userdata('user_id'); ?>">
                                 <input type="submit" id="add-customer" style="color:white;" class="btnclr btn m-b-5 m-r-2" name="add-user" value="<?= display('save') ?>" tabindex="6"/>
                             </div>
                         </div>
-                    <?= form_close(); ?>
+                    </form>
                     </div>
                  
                 </div>
             </div>
         </div>
+        <br><br><br>
     </section>
 </div>
 
@@ -657,4 +638,62 @@
             urlsstxFieldCount--;
         }
     }
+
+// Insert Company
+$("#insertCompany").validate({
+    rules: {
+        company_name: "required",
+        email: "required",
+        mobile: "required",
+        c_city: "required",
+        c_state: "required",
+        address: "required",
+        website: "required",
+    },
+    messages: {
+        company_name: "Company name is required",
+        email: "Email is required",
+        mobile: "Mobile is required",
+        c_city: "City is required",
+        c_state: "State is required",
+        address: "Address is required",
+        website: "Website is required",
+    },
+    submitHandler: function(form) {
+        var formData = new FormData(form); 
+        formData.append(csrfName, csrfHash); 
+        $.ajax({
+            type: "POST",
+            url: "<?php echo base_url(); ?>User/company_insert_branch", 
+            data: formData, 
+            dataType: "json",
+            contentType: false, 
+            processData: false,
+            success: function(response) {
+               if(response.status == 1){
+                  toastr.success(response.message, "Success", { 
+                     closeButton: false,
+                     timeOut: 1000
+                  });
+                  setTimeout(function () {
+                     window.location.href = "<?= base_url('Company_setup/manage_company?id='); ?>" + "<?= $_GET['id']; ?>" + "&admin_id=" + "<?= $_GET['admin_id']; ?>";
+                  }, 1000);
+               } else {
+                  toastr.error(response.message, "Error", { 
+                     closeButton: false,
+                     timeOut: 3000
+                  });
+               }
+            },
+            error: function(xhr, status, error) {
+               var errorMsg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : "An error occurred.";
+               toastr.error(errorMsg, "Error", {
+                  closeButton: false,
+                  timeOut: 1000
+               });
+            }
+        });
+    }
+});
+
 </script>
