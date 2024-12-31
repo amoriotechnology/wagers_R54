@@ -174,8 +174,8 @@ public function state_tax_list_employer()
         return $query->result_array();
     }
 }
-public function get_employee_sal($id,$user_id)
-{
+    public function get_employee_sal($id,$user_id)
+    {
         $this->db->select('h_rate,total_hours,extra_amount, SUM(extra_ytd) as extraytd , SUM(ytd) as ytd,SUM(sc_amount) as sc_amount');
         $this->db->from('timesheet_info');
         $this->db->where('templ_name', $id);
@@ -186,6 +186,7 @@ public function get_employee_sal($id,$user_id)
          }
         return true;
     }
+
   public function total_unemployment($id, $user_id)
     {
         $user_id = $this->session->userdata('user_id');

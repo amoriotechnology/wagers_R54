@@ -134,17 +134,6 @@
 
 .table th,
 .table td {
-<<<<<<< HEAD
-    width: auto; 
-    border: 1px solid #ccc;
-    padding: 8px;
-}
-.table input[type="text"],input[type="time"] {
-    text-align:center;
-    background-color: inherit; 
-    border-radius: 4px;
-    padding: 8px;
-=======
     width: auto;
     border: 1px solid #ccc;
     padding: 8px;
@@ -155,8 +144,6 @@
     background-color: inherit;
     border-radius: 4px;
     padding: 8px;
-
->>>>>>> 950d6db0a351a4064438816c3429faa746687d79
 }
 input {border:0;outline:0;}
 .work_table td {
@@ -210,14 +197,7 @@ th,td{
                         <a style="float:right;color:white;" href="<?php echo base_url('Chrm/manage_timesheet?id=' . $_GET['id'] . '&admin_id=' . $_GET['admin_id']); ?>" class="btnclr btn m-b-5 m-r-2"><i class="ti-align-justify"> </i> <?php echo "Manage TimeSheet" ?> </a>
                     </div>
                 </div>
-<<<<<<< HEAD
                 <?=form_open_multipart('Chrm/adminApprove', 'id="datavalidate"')?>
-=======
-                
-              
-                <?=form_open_multipart('Chrm/adminApprove', 'id="validate"')?>
-
->>>>>>> 950d6db0a351a4064438816c3429faa746687d79
                 <div class="panel-body">
                     <div class="form-group row">
                         <div class="col-sm-6">
@@ -272,18 +252,13 @@ th,td{
                                         <th style='height:25px;' class="col-md-2">End Time (HH:MM)</th>
                                         <th style='height:25px;' class="col-md-5">Hours</th>
                                         <th style='height:25px;' class="col-md-5">Over Time</th>
-                                        <?php ($time_sheet_data[0]['uneditable'] != 1) ? "" : "<th style='height:25px;' class='col-md-5'>Action</th>"; ?>
+                                        <?php if ($time_sheet_data[0]['uneditable'] != '1') { echo "<th style='height:25px;' class='col-md-5'>Action</th>"; } ?>
 
                                     <?php } elseif ($employee_name[0]['payroll_type'] != 'Hourly') {?>
                                         <th style='height:25px;' class="col-md-2">Date</th>
                                         <th style='height:25px;' class="col-md-1">Day</th>
                                         <th style='height:25px;' class="col-md-1">Present / Absent</th>
                                     <?php } elseif ($employee_name[0]['payroll_type'] == 'SalesCommission') {?>
-<<<<<<< HEAD
-                                        
-=======
-                                      
->>>>>>> 950d6db0a351a4064438816c3429faa746687d79
                                     <?php }?>
                                 </tr>
                             </thead>

@@ -2013,7 +2013,8 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         echo json_encode($data);
     }
 // Payslip Function - Madhu
-    public function pay_slip() {
+   public function pay_slip() {
+        // echo '<pre>'; print_r($_POST); echo '</pre>'; die;
         list($user_id, $company_id)       = array_map('decodeBase64UrlParameter', [$this->input->post('admin_company_id'), $this->input->post('adminId')]);
         $company_info                     = $this->Hrm_model->retrieve_companyinformation($user_id);
         $datacontent                      = $this->Hrm_model->retrieve_companydata($user_id);
@@ -2046,8 +2047,6 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         $data_timesheet['payment_ref_no'] = (!empty($this->input->post('payment_refno', TRUE)) ? $this->input->post('payment_refno', TRUE) : '');
         $work_hour                        = (!empty($this->input->post('hour_weekly_total')) ? $this->input->post('hour_weekly_total') : []);
         $data_timesheet['weekly_hours']   = json_encode($work_hour);
-        $salescommision              = $this->Hrm_model->sc_info_count($employee_id, $payperiod);
-        $data_timesheet['sc_amount'] = $salescommision['s_commision_amount'];
         if (!empty($this->input->post('administrator_person', TRUE))) {
             $data_timesheet['uneditable'] = 1;
         } else {
@@ -2098,7 +2097,7 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
             $hours_per_day = isset($this->input->post('sum')[$i]) ? $this->input->post('sum')[$i] : null;
             $daily_bk      = isset($this->input->post('dailybreak')[$i]) ? $this->input->post('dailybreak')[$i] : null;
             $data_info     = array(
-                'timesheet_id'  => $this->session->userdata("timesheet_id_new"),
+                'timesheet_id'  => $purchase_id_2,
                 'present'       => $present,
                 'Date'          => $date,
                 'Day'           => $day,
