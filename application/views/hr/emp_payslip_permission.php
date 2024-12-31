@@ -740,7 +740,7 @@ function yesnoCheck(that) {
     } else if (that.value == "Bank") {
         document.getElementById("adc").style.display = "none";
         document.getElementById("pc").style.display = "block";
-        document.getElementById("Cashmethod").style.display = "none";
+        document.getElementById("Cashmethod").style.display = "block";
     } else if (that.value == "Cash") {
         document.getElementById("adc").style.display = "none";
         document.getElementById("pc").style.display = "none";
