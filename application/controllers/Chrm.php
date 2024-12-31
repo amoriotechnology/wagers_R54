@@ -739,48 +739,6 @@ class Chrm extends CI_Controller {
             $this->template->full_admin_html_view($content);
         }
     }
-// public function state_tax_search() {
-    //     $this->load->model('Hrm_model');
-    //     $tax_name = trim(urldecode($this->input->post('url')));
-    //     $date = $this->input->post('daterangepicker-field');
-    //     $employee_name = $this->input->post('employee_name');
-    //     $employee_contributions = $this->fetch_contributions(decodeBase64UrlParameter($this->input->post('id')),$employee_name,$tax_name, $date,false);
-    //     $employer_contributions = $this->fetch_contributions(decodeBase64UrlParameter($this->input->post('id')),$employee_name,$tax_name, $date,true);
-    //     $merged_array = $this->merge_contributions($employee_contributions, $employer_contributions);
-    //     header('Content-Type: application/json');
-    //     echo json_encode($merged_array);
-    // }
-    // //For Individual State Tax Report
-    // public function fetch_contributions($id,$employee_name,$tax_name, $date,$is_employer) {
-    //     $state_tax_report = $is_employer ?
-    //     $this->Hrm_model->employer_state_tax_report($id,$employee_name,$tax_name, $date) :
-    //     $this->Hrm_model->state_tax_report($id,$employee_name,$tax_name, $date);
-    //     $living_state_tax_report = $is_employer ?
-    //     $this->Hrm_model->employer_living_state_tax_report($id,$employee_name,$tax_name, $date) :
-    //     $this->Hrm_model->living_state_tax_report($id,$employee_name,$tax_name, $date);
-    //     $merged_array = [];
-    //     foreach ($state_tax_report as $state_tax) {
-    //     $time_sheet_id = $state_tax['time_sheet_id'];
-    //     $merged_array[$time_sheet_id]['state_tax'][] = $state_tax;
-    //     }
-    //     foreach ($living_state_tax_report as $living_state_tax) {
-    //     $time_sheet_id = $living_state_tax['time_sheet_id'];
-    //     $merged_array[$time_sheet_id]['living_state_tax'][] = $living_state_tax;
-    //     }
-    //     return $merged_array;
-    // }
-    // //For Individual State Tax Report
-    // public function merge_contributions($employee_contributions, $employer_contributions)
-    // {
-    // $merged_array = [];
-    // foreach ($employee_contributions as $time_sheet_id => $employee_data) {
-    //     $merged_array[$time_sheet_id] = ['employee' => $employee_data];
-    // if (isset($employer_contributions[$time_sheet_id])) {
-    //         $merged_array[$time_sheet_id]['employer'] = $employer_contributions[$time_sheet_id];
-    //     }
-    // }
-    // return $merged_array;
-    // }
     //Overall Summary - Report
     public function social_taxsearch() {
         $emp_name               = trim($this->input->post('employee_name'));
@@ -1023,7 +981,6 @@ class Chrm extends CI_Controller {
         $setting_detail                   = $this->Web_settings->retrieve_setting_editdata();
         $data['setting_detail']           = $setting_detail;
         $data['getEmployeeContributions'] = $this->Hrm_model->getEmployeeContributions();
-        // $data['employee_data']            = $this->Hrm_model->employee_data_get($this->session->userdata('user_id'));
         $content = $this->parser->parse('hr/reports/city_tax', $data, true);
         $this->template->full_admin_html_view($content);
     }
@@ -1033,14 +990,12 @@ class Chrm extends CI_Controller {
         $data['setting_detail']           = $setting_detail;
         $emp_name                         = $this->input->post('employee_name');
         $data['getEmployeeContributions'] = $this->Hrm_model->getEmployeeContributions($emp_name, $date);
-        //  $data['employee_data']            = $this->Hrm_model->employee_data_get();
         echo json_encode($data['getEmployeeContributions']);
     }
     public function city_local_tax() {
         $setting_detail                   = $this->Web_settings->retrieve_setting_editdata();
         $data['setting_detail']           = $setting_detail;
         $data['getEmployeeContributions'] = $this->Hrm_model->getEmployeeContributions_local();
-        //  $data['employee_data']            = $this->Hrm_model->employee_data_get();
         $content = $this->parser->parse('hr/reports/city_local_tax', $data, true);
         $this->template->full_admin_html_view($content);
     }
@@ -1050,7 +1005,6 @@ class Chrm extends CI_Controller {
         $date                             = $this->input->post('daterangepicker-field');
         $emp_name                         = $this->input->post('employee_name');
         $data['getEmployeeContributions'] = $this->Hrm_model->getEmployeeContributions_local($emp_name, $date);
-        //   $data['employee_data']            = $this->Hrm_model->employee_data_get();
         echo json_encode($data['getEmployeeContributions']);
     }
     public function hr_tools() 
@@ -1088,7 +1042,7 @@ class Chrm extends CI_Controller {
         $content                 = $this->parser->parse('hr/edit_timesheet', $data, true);
         $this->template->full_admin_html_view($content);
     }
-    public function state_tax($endDate, $employee_id, $employee_tax, $working_state_tax, $user_id, $this_period, $tax_type, $timesheet_id, $payroll, $payroll_frequency, $action = false) {
+     public function state_tax($endDate, $employee_id, $employee_tax, $working_state_tax, $user_id, $this_period, $tax_type, $timesheet_id, $payroll, $payroll_frequency, $action = false) {
         $state_tax            = $this->Hrm_model->get_state_details('state', 'state_and_tax', 'state', $working_state_tax, $user_id);
         $state                = $this->Hrm_model->get_state_details('tax', 'state_and_tax', 'state', $state_tax[0]['state'], $user_id);
         $tax_split            = explode(',', $state[0]['tax']);
@@ -1232,6 +1186,7 @@ class Chrm extends CI_Controller {
         /// die();
         return $data;
     }
+    
     public function time_list() {
         list($user_id, $admin_id) = array_map('decodeBase64UrlParameter', [$_GET['id'], $_GET['admin_id']]);
         $timesheet_id             = $_GET['timesheet_id'];
@@ -1248,8 +1203,10 @@ class Chrm extends CI_Controller {
         $payperiod                = $timesheetdata[0]['month'];
         $get_date                 = explode('-', $payperiod);
         $end_date                 = $get_date[1];
-        $scAmount                 = $this->saleCommission($employee_id, $payperiod, $user_id, $admin_id);
+        $salescommision = $this->Hrm_model->sc_info_count($employee_id, $payperiod);
+        $scAmount = ($employeedata[0]['choice'] == 'Yes') ? ($salescommision['s_commision_amount'] ?? 0) : 0;
         $thisPeriodAmount         = $this->thisPeriodAmount($timesheetdata[0]['payroll_type'], $timesheetdata[0]['payroll_freq'], $total_hours, $hrate, $scAmount, $timesheetdata[0]['extra_amount'], $timesheetdata[0]['amount'], $user_id, $admin_id);
+    
         $admin_name               = $this->Hrm_model->getDatas('administrator', '*', ['adm_id' => $timesheetdata[0]['admin_name']]);
         // Country Tax Starts //
         $f                    = $this->countryTax('Federal Income tax', $employeedata[0]['employee_tax'], $thisPeriodAmount, $employee_id, 'f_tax', $user_id, $end_date, $timesheetdata[0]['timesheet_id']);
@@ -2089,6 +2046,8 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         $data_timesheet['payment_ref_no'] = (!empty($this->input->post('payment_refno', TRUE)) ? $this->input->post('payment_refno', TRUE) : '');
         $work_hour                        = (!empty($this->input->post('hour_weekly_total')) ? $this->input->post('hour_weekly_total') : []);
         $data_timesheet['weekly_hours']   = json_encode($work_hour);
+        $salescommision              = $this->Hrm_model->sc_info_count($employee_id, $payperiod);
+        $data_timesheet['sc_amount'] = $salescommision['s_commision_amount'];
         if (!empty($this->input->post('administrator_person', TRUE))) {
             $data_timesheet['uneditable'] = 1;
         } else {
@@ -2220,7 +2179,7 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         ];
         echo json_encode($response);
     }
-    public function adminApprove() {
+       public function adminApprove() {
         list($user_id, $company_id)     = array_map('decodeBase64UrlParameter', [$this->input->post('admin_company_id'), $this->input->post('adminId')]);
         $company_info                   = $this->Hrm_model->retrieve_companyinformation($user_id);
         $datacontent                    = $this->Hrm_model->retrieve_companydata($user_id);
@@ -2276,7 +2235,7 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
         $hrate                            = $data['employee_data'][0]['hrate'];
         $data_timesheet['h_rate']         = $data['employee_data'][0]['hrate'];
         $payperiod                        = $data['timesheet_data'][0]['month'];
-        $employee_id                      = $this->input->get('templ_name');
+        $employee_id                      = $this->input->post('templ_name');
         if ($data['timesheet_data'][0]['payroll_type'] !== 'Sales Partner' || $data['employee_data'][0]['choice'] == 'Yes') {
             if (!empty($this->input->post('administrator_person', TRUE))) {
                 $data_timesheet['uneditable'] = 1;
@@ -2297,6 +2256,8 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
             $q                           = $this->db->get('timesheet_info');
             $row                         = $q->row_array();
             $old_id                      = trim($row['timesheet_id']);
+            $salescommision  = $this->Hrm_model->sc_info_count($employee_id, $payperiod);
+            $data_timesheet['sc_amount'] = $salescommision['s_commision_amount'];
             if (!empty($old_id)) {
                 $this->session->set_userdata("timesheet_id_old", $row['timesheet_id']);
                 $this->db->where('timesheet_id', $this->session->userdata("timesheet_id_old"));
@@ -2342,13 +2303,15 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
             $hrate           = $hrate;
             $extra_thisrate  = $data['timesheet_data'][0]['extra_amount'];
             $above_extra_sum = $data['timesheet_data'][0]['amount'];
-            $scAmount        = 0;
+            // $scAmount = 0;
+            // if($employeedata[0]['choice'] == 'Yes') {
+            // $scAmount        = $salescommision['s_commision_amount'] ?? 0;
+            // }else{
+            // $scAmount        = 0;    
+            // }
+            $scAmount = ($employeedata[0]['choice'] == 'Yes') ? ($salescommision['s_commision_amount'] ?? 0) : 0;
             $final           = $this->thisPeriodAmount($payroll_type, $payroll_freq, $data_timesheet['total_hours'], $hrate, $scAmount, $extra_thisrate, $above_extra_sum, $user_id, $company_id);
-            $s               = '';
-            $u               = '';
-            $m               = '';
-            $f               = '';
-
+            $s= ''; $u= ''; $m= ''; $f= '';
             $f                 = $this->countryTax('Federal Income tax', $employeedata[0]['employee_tax'], $final, $timesheetdata[0]['templ_name'], 'f_tax', $user_id, $data_timesheet['end'], $timesheetdata[0]['timesheet_id']);
             $s                 = $this->countryTax('Social Security', $employeedata[0]['employee_tax'], $final, $timesheetdata[0]['templ_name'], 's_tax', $user_id, $data_timesheet['end'], $timesheetdata[0]['timesheet_id']);
             $m                 = $this->countryTax('Medicare', $employeedata[0]['employee_tax'], $final, $timesheetdata[0]['templ_name'], 'm_tax', $user_id, $data_timesheet['end'], $timesheetdata[0]['timesheet_id']);
@@ -2376,7 +2339,7 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
     }
 
 // Country Tax - Madhu
-    public function countryTax($tax_type, $employee_tax_column, $final, $templ_name, $tax_history_column, $user_id, $endDate, $timesheet_id) {
+  public function countryTax($tax_type, $employee_tax_column, $final, $templ_name, $tax_history_column, $user_id, $endDate, $timesheet_id) {
         $tax                = $this->db->select('*')->from('federal_tax')->where('tax', $tax_type)->where('created_by', $user_id)->get()->result_array();
         $tax_range          = '';
         $ytd                = [];
@@ -3681,9 +3644,9 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
             return 'Unknown';
         }
     }
-// This Period Final Amount - Madhu
+
     // This Period Final Amount - Madhu
-    public function thisPeriodAmount($payroll_type, $payroll_frequency, $total_hours, $hrate, $scAmount, $extra_thisrate, $above_extra_sum, $user_id, $company_id) {
+  public function thisPeriodAmount($payroll_type, $payroll_frequency, $total_hours, $hrate, $scAmount, $extra_thisrate, $above_extra_sum, $user_id, $company_id) {
         $workingHour = $this->db->select('work_hour, created_by')->from('working_time')->where('created_by', $user_id)->get()->row();
         $limit_hours = $workingHour->work_hour;
         $final       = 0;
@@ -3705,21 +3668,13 @@ $work_in_minutes = $work_hours * 60 + $work_minutes;
                 $final = $total_cost + $scAmount;
             } else {
                 // if()
-                $final = $extra_thisrate + $above_extra_sum;
+                $final = $extra_thisrate + $above_extra_sum + $scAmount;
             }
         }
         return $final;
     }
     // Sales Commision Amount - Madhu
-    public function saleCommission($employee_id, $payperiod, $user_id, $company_id) {
-        $salescommision  = $this->Hrm_model->sc_info_count($employee_id, $payperiod);
-        $scValue         = $salescommision['scValueAmount'];
-        $sc_totalAmount1 = $salescommision['total_gtotal'];
-        $sc_count        = $salescommision['count'];
-        $scValue         = $scValue / 100;
-        $scValueAmount1  = $scValue * $sc_totalAmount1;
-        return $scValueAmount1;
-    }
+
 // Log Data Table List
     public function logIndexData() {
         $encodedId      = isset($_GET["id"]) ? $_GET["id"] : null;

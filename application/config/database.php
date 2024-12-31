@@ -3,7 +3,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 $active_group  = 'default';
 $query_builder = TRUE;
-$active_record = TRUE; 
+$active_record = TRUE;
 
 $db['default'] = array(
     'dsn'          => '',
@@ -22,7 +22,7 @@ $db['default'] = array(
     'swap_pre'     => '',
     'encrypt'      => FALSE,
     'compress'     => FALSE,
-    'autoinit'     => TRUE, 
+    'autoinit'     => TRUE,
     'stricton'     => FALSE,
     'failover'     => array(),
     'save_queries' => TRUE,

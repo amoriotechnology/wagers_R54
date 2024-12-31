@@ -134,6 +134,7 @@
 
 .table th,
 .table td {
+<<<<<<< HEAD
     width: auto; 
     border: 1px solid #ccc;
     padding: 8px;
@@ -143,6 +144,19 @@
     background-color: inherit; 
     border-radius: 4px;
     padding: 8px;
+=======
+    width: auto;
+    border: 1px solid #ccc;
+    padding: 8px;
+   
+}
+.table input[type="text"],input[type="time"] {
+    text-align:center;
+    background-color: inherit;
+    border-radius: 4px;
+    padding: 8px;
+
+>>>>>>> 950d6db0a351a4064438816c3429faa746687d79
 }
 input {border:0;outline:0;}
 .work_table td {
@@ -187,7 +201,7 @@ th,td{
     </section>
 
 <section class="content">
-    <!-- New category -->
+
     <div class="row">
         <div class="col-sm-12">
             <div class="panel panel-bd lobidrag">
@@ -196,7 +210,14 @@ th,td{
                         <a style="float:right;color:white;" href="<?php echo base_url('Chrm/manage_timesheet?id=' . $_GET['id'] . '&admin_id=' . $_GET['admin_id']); ?>" class="btnclr btn m-b-5 m-r-2"><i class="ti-align-justify"> </i> <?php echo "Manage TimeSheet" ?> </a>
                     </div>
                 </div>
+<<<<<<< HEAD
                 <?=form_open_multipart('Chrm/adminApprove', 'id="datavalidate"')?>
+=======
+                
+              
+                <?=form_open_multipart('Chrm/adminApprove', 'id="validate"')?>
+
+>>>>>>> 950d6db0a351a4064438816c3429faa746687d79
                 <div class="panel-body">
                     <div class="form-group row">
                         <div class="col-sm-6">
@@ -258,7 +279,11 @@ th,td{
                                         <th style='height:25px;' class="col-md-1">Day</th>
                                         <th style='height:25px;' class="col-md-1">Present / Absent</th>
                                     <?php } elseif ($employee_name[0]['payroll_type'] == 'SalesCommission') {?>
+<<<<<<< HEAD
                                         
+=======
+                                      
+>>>>>>> 950d6db0a351a4064438816c3429faa746687d79
                                     <?php }?>
                                 </tr>
                             </thead>
@@ -438,7 +463,6 @@ if (!empty($time_sheet_data)) {
                                 </td>
 
                                 <?php } elseif ($employee_name[0]['payroll_type'] == 'SalesCommission') {?>
-                                <!-- Your code for 'SalesCommission' payroll type here, if any -->
                                 <?php }?>
 
                             </tr>
@@ -457,7 +481,7 @@ if (!empty($time_sheet_data)) {
                   <?php if ($employee_name[0]['payroll_type'] == 'Hourly') {?>
                         <td colspan="5" class="text-right" style="font-weight:bold;">Total Hours :</td>
                       <td style="text-align: center;"> <input  type="text"   readonly value="<?php echo $time_sheet_data[0]['total_hours']; ?>" name="total_net" id="total_net" /> </td>
-                      <!-- id="total_net" -->
+  
 
  <?php
 function convertToDecimalHours($time) {
@@ -482,17 +506,16 @@ $mins      = $time_sheet_data[0]['total_hours'] - $working_hour;
         echo $get_value
         ;?>"
          <?php
-//For This Period
-        $hrate                 = $employee_name[0]['hrate'];
+        $hrate = $employee_name[0]['hrate'];
         list($hours, $minutes) = explode(':', $get_value);
 
-// Convert to decimal hours
-        $total_hours = (int) $hours + ((int) $minutes / 60); // This should yield 25.5
 
-// Calculate total cost
-        $total_cost = $total_hours * $hrate; // This should yield 2550
+        $total_hours = (int) $hours + ((int) $minutes / 60);
 
-// Round the total cost
+
+        $total_cost = $total_hours * $hrate;
+
+
         $total_cost = round($total_cost, 2);
 //For YTD
         $total                 = $time_sheet_data[0]['total_hours'];

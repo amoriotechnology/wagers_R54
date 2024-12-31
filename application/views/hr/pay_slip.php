@@ -128,6 +128,9 @@ if (
 ?>
               </th>
               <th>RATE</th>
+              <?php if($timesheet_info[0]["sc_amount"] != 0){ ?>
+               <th>Sales Commision</th>
+               <?php  }  ?>
               <th>THIS PERIOD(<?php echo $setting[0]["currency"]; ?>)</th>
               <th> <?php
 if (
@@ -149,7 +152,14 @@ if (
               <td>Salary</td>
               <td><?php echo $timesheet_info[0]["hour"]; ?></td>
               <td><?php echo $timesheet_info[0]["h_rate"]; ?></td>
-              <td id="total_period"><?php echo round($timesheet_info[0]["amount"], 2); ?></td>
+              <?php if($timesheet_info[0]["sc_amount"] != 0){ ?>
+              <td><?php echo $timesheet_info[0]["sc_amount"]; ?></td>
+              <?php } ?>
+              <td id="total_period">
+              <?php 
+              $totalAmount =$timesheet_info[0]["amount"]+$timesheet_info[0]["sc_amount"];
+              echo round($totalAmount, 2); 
+              ?></td>
               <td style="display:none;" id="total_period"><?php echo $ytd["ytd_salary"]; ?></td>
               <td><?php
 if (
@@ -175,7 +185,10 @@ if (
               <td>Over Time</td>
              <td> <?php echo !empty($timesheet_info[0]["extra_hour"]) ? $timesheet_info[0]["extra_hour"] : 0; ?> </td>
              <td> <?php if ($timesheet_info[0]["extra_hour"]) {echo $timesheet_info[0]["extra_rate"];} else {echo 0;}?> </td>
-              <td id="above_over_this_period"> <?php if ($timesheet_info[0]["extra_hour"]) {echo $timesheet_info[0]["extra_amount"];} else {echo 0;}?> </td>
+             <?php if($timesheet_info[0]["sc_amount"] != 0){ ?>
+             <td></td>
+             <?php  }  ?> 
+             <td id="above_over_this_period"> <?php if ($timesheet_info[0]["extra_hour"]) {echo $timesheet_info[0]["extra_amount"];} else {echo 0;}?> </td>
               <td> <?php
 if ($ytd["ytd_hours_only_overtime"]) {
     $hoursExclOvertime = substr($ytd["ytd_hours_only_overtime"], 0, 5);
@@ -198,7 +211,10 @@ $salary                = (is_numeric($ytd["ytd_overtime_salary"]) ? $ytd["ytd_ov
               <th><strong>TOTAL :</strong></td>
               <th> <?php echo $timesheet_info[0]["total_hours"]; ?> </th>
               <th></th>
-              <th><?php $amount = $timesheet_info[0]["amount"];
+                <?php if($timesheet_info[0]["sc_amount"] != 0){ ?>
+                <th></th>
+                <?php  }  ?>
+              <th><?php $amount = $timesheet_info[0]["amount"]+$timesheet_info[0]["sc_amount"];
     if ($timesheet_info[0]["extra_hour"]) {
         $extra_amount = $timesheet_info[0]["extra_amount"];
         if ($extra_amount == 0) {

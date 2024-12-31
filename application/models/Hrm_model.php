@@ -140,6 +140,7 @@ $this->db->update('state_and_tax', $data1);
             return false;
         }
     }
+
  public function curn_info_default($currency_details, $decodedId) {
         $this->db->select('*');
         $this->db->from('currency_tbl');
@@ -175,23 +176,11 @@ public function state_tax_list_employer()
 }
 public function get_employee_sal($id,$user_id)
 {
-        $this->db->select('h_rate,total_hours,extra_amount, SUM(extra_ytd) as extraytd , SUM(ytd) as ytd');
+        $this->db->select('h_rate,total_hours,extra_amount, SUM(extra_ytd) as extraytd , SUM(ytd) as ytd,SUM(sc_amount) as sc_amount');
         $this->db->from('timesheet_info');
         $this->db->where('templ_name', $id);
         $this->db->where('create_by', $user_id);
         $query = $this->db->get();
-          if ($query->num_rows() > 0) {
-            return $query->result_array();
-         }
-        return true;
-    }
-    public function get_employee_sales_commission($id , $tax){
-        $user_id = $this->session->userdata('user_id');
-        $this->db->select('SUM(sales_c_amount) as salescom');
-        $this->db->from('info_payslip');
-        $this->db->where('templ_name', $id);
-         $this->db->where('create_by', $user_id);
-         $query = $this->db->get();
           if ($query->num_rows() > 0) {
             return $query->result_array();
          }
@@ -746,7 +735,6 @@ public function employr($emp_name = null, $date = null, $id)
 
     $this->db->order_by('a.id', 'desc');
     $query = $this->db->get();
-   // echo $this->db->last_query();
     return $query->result_array();
 }
 
@@ -797,10 +785,7 @@ public function getPaginatedfederalincometax($limit, $offset, $orderField, $orde
     $this->db->group_by("b.timesheet_id, a.month, a.id, c.first_name, c.middle_name, c.last_name, c.employee_tax, b.f_tax, b.m_tax, b.s_tax, b.u_tax, a.cheque_date, b.templ_name");
 
     $query = $this->db->get();
-
-    // echo $this->db->last_query(); die;
-
-    if ($query === false) {
+ if ($query === false) {
         return false;
     }
     return $query->result_array();
@@ -1099,7 +1084,6 @@ $this->db->where('a.end <=', $date_range['end_date']);
     $this->db->where('a.create_by', $id);
     $this->db->group_by('b.net_amount,a.cheque_date,b.total_amount,a.timesheet_id,d.code, c.id, c.first_name, c.middle_name, c.last_name, d.tax_type, d.tax,d.amount');
     $query = $this->db->get();
-//echo $this->db->last_query();
     $resultRows = $query->result_array();
     return $resultRows;
 }
@@ -1256,7 +1240,7 @@ public function state_summary_employee($id,$emp_name = null, $tax_choice = null,
         $this->db->like("CONCAT(TRIM(c.first_name), ' ', TRIM(c.middle_name), ' ', TRIM(c.last_name))", $trimmed_emp_name, 'both', false);
     }
     $this->db->where('a.create_by', $id);
-    $this->db->group_by('a.timesheet_id, d.code, c.id, c.first_name, c.middle_name, c.last_name, d.tax_type, d.tax,d.amount'); // Group by to aggregate the sum
+    $this->db->group_by('a.timesheet_id, d.code, c.id, c.first_name, c.middle_name, c.last_name, d.tax_type, d.tax,d.amount');
       $this->db->order_by('a.id', 'DESC');
     $query = $this->db->get();
     $resultRows = $query->result_array();
@@ -1624,7 +1608,6 @@ public function uc2a_retrievedata($quarter, $user_id)
     $this->db->group_by('b.social_security_number, b.first_name, b.middle_name, b.last_name');
  
     $query = $this->db->get();
-    // echo $this->db->last_query(); die;
      if ($query->num_rows() > 0) {
         return $query->result_array();
     } else {
@@ -1916,7 +1899,62 @@ public function getother_tax($id)
    }
 
                           //============================Forms===================================//
-      
+      //===============================Sales Commission ====================================//
+public function sc_info_count($templ_name, $payperiod) {
+    $date = explode('-', $payperiod);
+    $formattedStartDate = date('Y-m-d', strtotime($date[0]));
+    $formattedendDate = date('Y-m-d', strtotime($date[1]));
+    $this->db->select('b.sc, a.commercial_invoice_number, a.gtotal');
+    $this->db->from('invoice a');
+    $this->db->join('employee_history b', 'a.user_emp_id = b.id');
+    $this->db->join('payment c', 'a.payment_id = c.payment_id');
+    $this->db->where('a.paid_amount = a.gtotal');
+    $this->db->where('a.user_emp_id', $templ_name);
+    $this->db->where('a.sales_by', $this->session->userdata('user_id'));
+    $this->db->where('c.payment_date >=', $formattedStartDate);
+    $this->db->where('c.payment_date <=', $formattedendDate);
+    // $this->db->group_start();
+    // $this->db->where('c.balance', '0.00');
+    // $this->db->or_where('c.balance', '0.0');
+    // $this->db->or_where('c.balance', '0');
+    // $this->db->group_end();
+    $query = $this->db->get();
+    $result['sc'] = $query->result_array();
+    $tempArray = [];
+    $filteredResult = [];
+    foreach ($result['sc'] as $row) {
+        $invoiceNumber = $row['commercial_invoice_number'];
+        if (!in_array($invoiceNumber, $tempArray)) {
+            $tempArray[] = $invoiceNumber;
+            $filteredResult[] = $row;
+        }
+    }
+    $result['sc'] = $filteredResult;
+    $count = count($filteredResult);
+    $result['count'] = $count;
+    $total_gtotal = 0;
+    foreach ($filteredResult as $row) {
+        $total_gtotal += $row['gtotal'];
+    }
+    $result['total_gtotal'] = $total_gtotal;
+    $scValue = isset($filteredResult[0]['sc']) ? $filteredResult[0]['sc'] : 0;
+    $sc_totalAmount = $total_gtotal;
+    if ($sc_totalAmount != 0) {
+        $scValuePercentage = ($scValue / $sc_totalAmount) * 100;
+        $scValueAmount = ($scValuePercentage / 100) * $sc_totalAmount;
+    } else {
+        $scValueAmount = 0;
+    }
+
+    return [
+        'sc' => $scValue / 100, 
+        'total_gtotal' => $total_gtotal,
+        'count' => $count,
+        's_commision_amount' => ($scValue / 100) * $total_gtotal,
+        'scValueAmount' => $scValueAmount,
+    ];
+}
+      //===============================Sales Commision =====================================//
 
 public function getEmployeeContributions($emp_name = null, $date = null){
         $this->db->select('a.time_sheet_id,d.month,a.amount,c.*');
@@ -2113,58 +2151,7 @@ private function format_time($time) {
     return '00:00';
 }
 
-public function sc_info_count($templ_name, $payperiod) {
-    $date = explode('-', $payperiod);
-    $formattedStartDate = date('Y-m-d', strtotime($date[0]));
-    $formattedendDate = date('Y-m-d', strtotime($date[1]));
-    $this->db->select('b.sc, a.commercial_invoice_number, a.gtotal');
-    $this->db->from('invoice a');
-    $this->db->join('employee_history b', 'a.user_emp_id = b.id');
-    $this->db->join('payment c', 'a.payment_id = c.payment_id');
-    $this->db->where('a.paid_amount = a.gtotal');
-    $this->db->where('a.user_emp_id', $templ_name);
-    $this->db->where('a.sales_by', $this->session->userdata('user_id'));
-    $this->db->where('c.payment_date >=', $formattedStartDate);
-    $this->db->where('c.payment_date <=', $formattedendDate);
-    $this->db->group_start();
-    $this->db->where('c.balance', '0.00');
-    $this->db->or_where('c.balance', '0.0');
-    $this->db->or_where('c.balance', '0');
-    $this->db->group_end();
-    $query = $this->db->get();
-    $result['sc'] = $query->result_array();
-    $tempArray = [];
-    $filteredResult = [];
-    foreach ($result['sc'] as $row) {
-        $invoiceNumber = $row['commercial_invoice_number'];
-        if (!in_array($invoiceNumber, $tempArray)) {
-            $tempArray[] = $invoiceNumber;
-            $filteredResult[] = $row;
-        }
-    }
-    $result['sc'] = $filteredResult;
-    $count = count($filteredResult);
-    $result['count'] = $count;
-    $total_gtotal = 0;
-    foreach ($filteredResult as $row) {
-        $total_gtotal += $row['gtotal'];
-    }
-    $result['total_gtotal'] = $total_gtotal;
-    $scValue = isset($filteredResult[0]['sc']) ? $filteredResult[0]['sc'] : 0;
-    $sc_totalAmount1 = $total_gtotal;
-    if ($sc_totalAmount1 != 0) {
-        $scValuePercentage = ($scValue / $sc_totalAmount1) * 100;
-        $scValueAmount = ($scValuePercentage / 100) * $sc_totalAmount1;
-    } else {
-        $scValueAmount = 0;
-    }
-    return [
-        'sc' => $scValue / 100, 
-        'total_gtotal' => $total_gtotal,
-        'count' => $count,
-        'scValueAmount' => $scValueAmount,
-    ];
-}
+
 // Employee Details - Madhu
 public function employee_info($templ_name, $user_id)
 {
@@ -2896,14 +2883,7 @@ public function getTaxdetailsdata($tax){
         }
         return false;
     }
-
-
-//w2 living state tax 
-   
-// w2 living local tax
-
-
-    public function w2total_statedata($id)
+  public function w2total_statedata($id)
     {
         $user_id = $this->session->userdata('user_id');
         $this->db->select('*');
@@ -2918,20 +2898,6 @@ public function getTaxdetailsdata($tax){
         }
         return false;
     }
-
-// public function w2get_payslip_alldata($id)
-// {
-//     $user_id = $this->session->userdata('user_id');
-//     $this->db->select('*');       
-//     $this->db->from('info_payslip');
-//     $this->db->where('templ_name', $id);
-//     $this->db->where('create_by', $user_id);
-//     $query = $this->db->get();
-//     if ($query->num_rows() > 0) {
-//         return $query->result_array();
-//     }
-//     return false;
-// }
 
 //Used in f940
 public function get_paytotal()
@@ -3423,28 +3389,41 @@ public function get_cumulative_tax_amount($tax, $end, $employee, $tax_type)
     }
 }
 //To get the cumulative country tax amount of specific employee
-public function sum_of_country_tax($end_date = null, $empid, $timesheetid , $user_id)
+public function sum_of_country_tax($end_date = null, $empid, $timesheetid, $user_id)
 {
-    $query_row_count = $this->db->select('SUM(info_payslip.s_tax) as t_s_tax, SUM(info_payslip.m_tax) as t_m_tax,
-    SUM(info_payslip.f_tax) as t_f_tax, SUM(info_payslip.u_tax) as t_u_tax, SUM(info_payslip.total_amount) as t_amount,
-    SUM(timesheet_info.ytd) as ytd_salary,SUM(timesheet_info.extra_ytd) as ytd_overtime_salary,
-    SUM(info_payslip.sc) as sc,SUM(timesheet_info.total_hours) as ytd_days,
-    SUM(timesheet_info.hour) as ytd_hours_excl_overtime,SEC_TO_TIME(SUM(TIME_TO_SEC(timesheet_info.total_hours))) as total_hours,
-    SEC_TO_TIME(SUM(TIME_TO_SEC(timesheet_info.extra_hour))) as ytd_hours_only_overtime,
-    SEC_TO_TIME(SUM(TIME_TO_SEC(timesheet_info.hour))) as ytd_hours_excl_overtime_in_time');
+    $this->db->select('
+        SUM(info_payslip.s_tax) as t_s_tax, 
+        SUM(info_payslip.m_tax) as t_m_tax,
+        SUM(info_payslip.f_tax) as t_f_tax, 
+        SUM(info_payslip.u_tax) as t_u_tax, 
+        SUM(info_payslip.total_amount) as t_amount,
+        SUM(timesheet_info.ytd) as ytd_salary,
+        SUM(timesheet_info.sc_amount) as sc_amount,
+        SUM(timesheet_info.extra_ytd) as ytd_overtime_salary,
+        SUM(info_payslip.sc) as sc,
+        SUM(timesheet_info.total_hours) as ytd_days,
+        SUM(timesheet_info.hour) as ytd_hours_excl_overtime,
+        SEC_TO_TIME(SUM(TIME_TO_SEC(timesheet_info.total_hours))) as total_hours,
+        SEC_TO_TIME(SUM(TIME_TO_SEC(timesheet_info.extra_hour))) as ytd_hours_only_overtime,
+        SEC_TO_TIME(SUM(TIME_TO_SEC(timesheet_info.hour))) as ytd_hours_excl_overtime_in_time
+    ');
     $this->db->from('timesheet_info');
     $this->db->join('info_payslip', 'timesheet_info.timesheet_id = info_payslip.timesheet_id');
-    $this->db->where('info_payslip.templ_name',$empid);
+    $this->db->where('info_payslip.templ_name', $empid);
     $this->db->where('info_payslip.create_by', $user_id);
-    if($end_date){
-    $this->db->where("STR_TO_DATE(SUBSTRING_INDEX(timesheet_info.month, ' - ', -1), '%m/%d/%Y') <= STR_TO_DATE('$end_date', '%m/%d/%Y')", NULL, FALSE);
+    
+    if ($end_date) {
+        $this->db->where("STR_TO_DATE(SUBSTRING_INDEX(timesheet_info.month, ' - ', -1), '%m/%d/%Y') <= STR_TO_DATE('$end_date', '%m/%d/%Y')", NULL, FALSE);
     }
-    $query = $this->db->get();
-    if ($query->num_rows() > 0) {
+ $query = $this->db->get();
+
+   if ($query->num_rows() > 0) {
         return $query->result_array();
     }
+
     return false;
 }
+
 // All Federal Taxes - Madhu
 public function allFederaltaxes($taxType, $user_id)
 {
