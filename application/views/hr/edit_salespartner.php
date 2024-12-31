@@ -713,6 +713,8 @@ $(document).ready(function () {
             first_name: "required",
             last_name: "required",
             phone: "required",
+            federaltaxclassification: "required",
+            emp_tax_detail: "required",
             ssn: {
                minlength: 9,
                digits: true
@@ -723,6 +725,8 @@ $(document).ready(function () {
             first_name: "First name is required",
             last_name: "Last name is required",
             phone: "Phone is required",
+            federaltaxclassification: "Federal Tax Classification is required",
+            emp_tax_detail: "Employee Tax is required",
             ssn: {
                required: "Social Security Number is required",
                minlength: "Social Security Number must be at least 9 digits",
