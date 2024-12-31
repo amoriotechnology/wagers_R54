@@ -1380,7 +1380,7 @@ public function state_tax_report($limit, $start, $orderField, $orderDirection, $
     $this->db->where('b.create_by', $decodedId);
     $this->db->distinct();
     $this->db->limit($limit, $start);
-    $this->db->order_by($orderField, $orderDirection);
+    $this->db->order_by('a.id', $orderDirection);
     $query = $this->db->get();
     if (!$query) {
         $error = $this->db->error();
